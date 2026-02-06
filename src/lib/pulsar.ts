@@ -1,15 +1,14 @@
 import Pulsar from 'pulsar-client'
-import config from './config.js'
 
 let client: Pulsar.Client | undefined
 
-export function initPulsar(): Pulsar.Client {
+export function initPulsar(url: string): Pulsar.Client {
 	if (client) {
 		return client
 	}
 
 	client = new Pulsar.Client({
-		serviceUrl: config.pulsarServiceUrl,
+		serviceUrl: url,
 	})
 
 	return client

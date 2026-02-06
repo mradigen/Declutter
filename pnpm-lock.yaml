@@ -14,6 +14,9 @@ importers:
       '@hono/standard-validator':
         specifier: ^0.2.2
         version: 0.2.2(@standard-schema/spec@1.1.0)(hono@4.11.7)
+      '@valkey/valkey-glide':
+        specifier: ^2.2.6
+        version: 2.2.6
       hono:
         specifier: ^4.11.7
         version: 4.11.7
@@ -220,6 +223,36 @@ packages:
     resolution: {integrity: sha512-Yhlar6v9WQgUp/He7BdgzOz8lqMQ8sU+jkCq7Wx8Myc5YFJLbEe7lgui/V7G1qB1DJykHSGwreceSaD60Y0PUQ==}
     hasBin: true
 
+  '@protobufjs/aspromise@1.1.2':
+    resolution: {integrity: sha512-j+gKExEuLmKwvz3OgROXtrJ2UG2x8Ch2YZUxahh+s1F2HZ+wAceUNLkvy6zKCPVRkU++ZWQrdxsUeQXmcg4uoQ==}
+
+  '@protobufjs/base64@1.1.2':
+    resolution: {integrity: sha512-AZkcAA5vnN/v4PDqKyMR5lx7hZttPDgClv83E//FMNhR2TMcLUhfRUBHCmSl0oi9zMgDDqRUJkSxO3wm85+XLg==}
+
+  '@protobufjs/codegen@2.0.4':
+    resolution: {integrity: sha512-YyFaikqM5sH0ziFZCN3xDC7zeGaB/d0IUb9CATugHWbd1FRFwWwt4ld4OYMPWu5a3Xe01mGAULCdqhMlPl29Jg==}
+
+  '@protobufjs/eventemitter@1.1.0':
+    resolution: {integrity: sha512-j9ednRT81vYJ9OfVuXG6ERSTdEL1xVsNgqpkxMsbIabzSo3goCjDIveeGv5d03om39ML71RdmrGNjG5SReBP/Q==}
+
+  '@protobufjs/fetch@1.1.0':
+    resolution: {integrity: sha512-lljVXpqXebpsijW71PZaCYeIcE5on1w5DlQy5WH6GLbFryLUrBD4932W/E2BSpfRJWseIL4v/KPgBFxDOIdKpQ==}
+
+  '@protobufjs/float@1.0.2':
+    resolution: {integrity: sha512-Ddb+kVXlXst9d+R9PfTIxh1EdNkgoRe5tOX6t01f1lYWOvJnSPDBlG241QLzcyPdoNTsblLUdujGSE4RzrTZGQ==}
+
+  '@protobufjs/inquire@1.1.0':
+    resolution: {integrity: sha512-kdSefcPdruJiFMVSbn801t4vFK7KB/5gd2fYvrxhuJYg8ILrmn9SKSX2tZdV6V+ksulWqS7aXjBcRXl3wHoD9Q==}
+
+  '@protobufjs/path@1.1.2':
+    resolution: {integrity: sha512-6JOcJ5Tm08dOHAbdR3GrvP+yUUfkjG5ePsHYczMFLq3ZmMkAD98cDgcT2iA1lJ9NVwFd4tH/iSSoe44YWkltEA==}
+
+  '@protobufjs/pool@1.1.0':
+    resolution: {integrity: sha512-0kELaGSIDBKvcgS4zkjz1PeddatrjYcmMWOlAuAPwAeccUrPHdUqo/J6LiymHHEiJT5NrF1UVwxY14f+fy4WQw==}
+
+  '@protobufjs/utf8@1.1.0':
+    resolution: {integrity: sha512-Vvn3zZrhQZkkBE8LSuW3em98c0FwgO4nxzv6OdSxPKJIEKY2bGbHn+mhGIPerzI4twdxaP8/0+06HBpwf345Lw==}
+
   '@standard-schema/spec@1.1.0':
     resolution: {integrity: sha512-l2aFy5jALhniG5HgqrD6jXLi/rUWrKvqN/qJx6yoJsgKhblVd+iqqU4RCXavm/jPityDo5TCvKMnpjKnOriy0w==}
 
@@ -228,6 +261,44 @@ packages:
 
   '@types/pg@8.16.0':
     resolution: {integrity: sha512-RmhMd/wD+CF8Dfo+cVIy3RR5cl8CyfXQ0tGgW6XBL8L4LM/UTEbNXYRbLwU6w+CgrKBNbrQWt4FUtTfaU5jSYQ==}
+
+  '@valkey/valkey-glide-darwin-arm64@2.2.6':
+    resolution: {integrity: sha512-zGJakB4a2DyniXjINYtY171WAXVEZkxrFKRB2Eqcs8nSIqpUU8Ze4s4zdv2nSLvZg2PhjLrgl1oC8IYwiD7MJQ==}
+    cpu: [arm64]
+    os: [darwin]
+
+  '@valkey/valkey-glide-darwin-x64@2.2.6':
+    resolution: {integrity: sha512-z8HFJosuxgB8CEXEewDGOR36pCriFuzmZyUucdZhcNZCBh7uVmCao6H07fmq7DH0TrDnUi5vvjpCQqXGQf5FIA==}
+    cpu: [x64]
+    os: [darwin]
+
+  '@valkey/valkey-glide-linux-arm64-gnu@2.2.6':
+    resolution: {integrity: sha512-R6bSI8l1TkobHNQoRfTcFUiZhX5ICJwsSlo5LKbsp5BxCfU4RiGFjS8b2BSqNdpPqB4dxk4v/UGMHTICvN2dnw==}
+    cpu: [arm64]
+    os: [linux]
+    libc: [glibc]
+
+  '@valkey/valkey-glide-linux-arm64-musl@2.2.6':
+    resolution: {integrity: sha512-QeNB428zwxFcAceTniehb+8NKFiaqSAjDRrvyHMZ5fBARzigp6cUj2Lw6rUjea/2o2cOZIbTURYtWNRtA8dL0A==}
+    cpu: [arm64]
+    os: [linux]
+    libc: [musl]
+
+  '@valkey/valkey-glide-linux-x64-gnu@2.2.6':
+    resolution: {integrity: sha512-97tXUvTJmTL4X7fx9wN6LBpMn4CkJ7zTTEhvF6vkwo2ktBEaSmmIE3HzRycu0tr2Gd8uJb3sfW/5RlFC+2cHMw==}
+    cpu: [x64]
+    os: [linux]
+    libc: [glibc]
+
+  '@valkey/valkey-glide-linux-x64-musl@2.2.6':
+    resolution: {integrity: sha512-gL3lU4Hm0lteDD8GQvAVPTjTkQurhmYZEzNUkn3wLKTm6tmJ9TchDXagEH+KuRsvNNu9pJ8pGyxoFMHDDqPiwA==}
+    cpu: [x64]
+    os: [linux]
+    libc: [musl]
+
+  '@valkey/valkey-glide@2.2.6':
+    resolution: {integrity: sha512-5LDnScwP92i4jNHz0eTH+3UwDRNl0no/mPCGyUFQgeBE0/QLhMPK+ZEYNYNjHFuZASdPs1bYczi+pIL2bGosYQ==}
+    engines: {node: '>=16'}
 
   abbrev@1.1.1:
     resolution: {integrity: sha512-nne9/IiQ/hzIhY6pdDnbBtz7DjPTKrY00P/zvPSm5pOFkl6xuGrGnXn/VtTNNfNtAfZ9/1RtehkszU9qcTii0Q==}
@@ -380,6 +451,9 @@ packages:
     resolution: {integrity: sha512-zymm5+u+sCsSWyD9qNaejV3DFvhCKclKdizYaJUuHA83RLjb7nSuGnddCHGv0hk+KY7BMAlsWeK4Ueg6EV6XQg==}
     engines: {node: '>=8'}
 
+  long@5.3.2:
+    resolution: {integrity: sha512-mNAgZ1GmyNhD7AuqnTG3/VQ26o760+ZYBPKjPvugO8+nLbYfX6TVpJPseBvopbdY+qpZ/lKUnmEc1LeZYS3QAA==}
+
   make-dir@3.1.0:
     resolution: {integrity: sha512-g3FeP20LNwhALb/6Cz6Dd4F2ngze0jz7tbzrD2wAV+o9FeNHe4rL+yK2md0J/fiSf1sa1ADhXqi5+oVwOM/eGw==}
     engines: {node: '>=8'}
@@ -493,6 +567,10 @@ packages:
     resolution: {integrity: sha512-UOnG6LftzbdaHZcKoPFtOcCKztrQ57WkHDeRD9t/PTQtmT0NHSeWWepj6pS0z/N7+08BHFDQVUrfmfMRcZwbMg==}
     engines: {node: '>=14'}
     hasBin: true
+
+  protobufjs@7.5.4:
+    resolution: {integrity: sha512-CvexbZtbov6jW2eXAvLukXjXUW1TzFaivC46BpWc/3BpcCysb5Vffu+B3XHMm8lVEuy2Mm4XGex8hBSg1yapPg==}
+    engines: {node: '>=12.0.0'}
 
   pulsar-client@1.16.0:
     resolution: {integrity: sha512-07D+Tfq+MnKGmwUiG/VQb7USUFV01W4BrotlL1zU4qkwBbZsT8kBSNiErg/f/gXv6NPyiTAI3x7JarT4gx0GFw==}
@@ -735,6 +813,29 @@ snapshots:
       - encoding
       - supports-color
 
+  '@protobufjs/aspromise@1.1.2': {}
+
+  '@protobufjs/base64@1.1.2': {}
+
+  '@protobufjs/codegen@2.0.4': {}
+
+  '@protobufjs/eventemitter@1.1.0': {}
+
+  '@protobufjs/fetch@1.1.0':
+    dependencies:
+      '@protobufjs/aspromise': 1.1.2
+      '@protobufjs/inquire': 1.1.0
+
+  '@protobufjs/float@1.0.2': {}
+
+  '@protobufjs/inquire@1.1.0': {}
+
+  '@protobufjs/path@1.1.2': {}
+
+  '@protobufjs/pool@1.1.0': {}
+
+  '@protobufjs/utf8@1.1.0': {}
+
   '@standard-schema/spec@1.1.0': {}
 
   '@types/node@20.19.30':
@@ -746,6 +847,36 @@ snapshots:
       '@types/node': 20.19.30
       pg-protocol: 1.11.0
       pg-types: 2.2.0
+
+  '@valkey/valkey-glide-darwin-arm64@2.2.6':
+    optional: true
+
+  '@valkey/valkey-glide-darwin-x64@2.2.6':
+    optional: true
+
+  '@valkey/valkey-glide-linux-arm64-gnu@2.2.6':
+    optional: true
+
+  '@valkey/valkey-glide-linux-arm64-musl@2.2.6':
+    optional: true
+
+  '@valkey/valkey-glide-linux-x64-gnu@2.2.6':
+    optional: true
+
+  '@valkey/valkey-glide-linux-x64-musl@2.2.6':
+    optional: true
+
+  '@valkey/valkey-glide@2.2.6':
+    dependencies:
+      long: 5.3.2
+      protobufjs: 7.5.4
+    optionalDependencies:
+      '@valkey/valkey-glide-darwin-arm64': 2.2.6
+      '@valkey/valkey-glide-darwin-x64': 2.2.6
+      '@valkey/valkey-glide-linux-arm64-gnu': 2.2.6
+      '@valkey/valkey-glide-linux-arm64-musl': 2.2.6
+      '@valkey/valkey-glide-linux-x64-gnu': 2.2.6
+      '@valkey/valkey-glide-linux-x64-musl': 2.2.6
 
   abbrev@1.1.1: {}
 
@@ -914,6 +1045,8 @@ snapshots:
 
   is-fullwidth-code-point@3.0.0: {}
 
+  long@5.3.2: {}
+
   make-dir@3.1.0:
     dependencies:
       semver: 6.3.1
@@ -1008,6 +1141,21 @@ snapshots:
       xtend: 4.0.2
 
   prettier@3.8.1: {}
+
+  protobufjs@7.5.4:
+    dependencies:
+      '@protobufjs/aspromise': 1.1.2
+      '@protobufjs/base64': 1.1.2
+      '@protobufjs/codegen': 2.0.4
+      '@protobufjs/eventemitter': 1.1.0
+      '@protobufjs/fetch': 1.1.0
+      '@protobufjs/float': 1.0.2
+      '@protobufjs/inquire': 1.1.0
+      '@protobufjs/path': 1.1.2
+      '@protobufjs/pool': 1.1.0
+      '@protobufjs/utf8': 1.1.0
+      '@types/node': 20.19.30
+      long: 5.3.2
 
   pulsar-client@1.16.0:
     dependencies:
