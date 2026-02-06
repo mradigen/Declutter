@@ -24,7 +24,7 @@ async function consume(event: Event) {
 
 // Pulsar Consumer
 
-let client = initPulsar()
+let client = initPulsar(config.pulsarServiceUrl)
 
 const subscriptionName =
 	'eventsConsumer-' + Math.random().toString(36).substring(2, 15)
