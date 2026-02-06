@@ -17,8 +17,10 @@ router.post('/', sValidator('json', EventSchema), (c) => {
 	const event: Event = c.req.valid('json')
 
 	if (!checkSiteID(event.siteID)) {
-		c.status(400)
-		return c.text('Invalid siteID')
+		// c.status(400)
+		// return c.text('Invalid siteID')
+		c.status(202) // sends 202 to prevent leaking information about valid siteIDs
+		return c.text('Event produced')
 	}
 
 	event.timestamp = Date.now()
