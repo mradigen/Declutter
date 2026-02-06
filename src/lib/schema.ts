@@ -10,3 +10,18 @@ export const EventSchema = z.object({
 })
 
 export type Event = z.infer<typeof EventSchema>
+
+export const SiteSchema = z.object({
+	siteID: z.uuid(),
+	userID: z.string().min(1),
+})
+
+export type Site = z.infer<typeof SiteSchema>
+
+export const UserSchema = z.object({
+	userID: z.string().min(1),
+	email: z.email(),
+	password: z.string().min(1),
+})
+
+export type User = z.infer<typeof UserSchema>

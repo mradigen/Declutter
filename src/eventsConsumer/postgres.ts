@@ -16,14 +16,25 @@ export class Postgres implements IStorage {
 
 		await this.client.connect()
 
-		const res = await this.client.query(`
+		await this.client.query(`
+			CREATE TABLE IF NOT EXISTS users (
+				id          UUID PRIMARY KEY,
+				email       TEXT UNIQUE,
+				password    TEXT
+			);
+
+			CREATE TABLE IF NOT EXISTS sites (
+				id          UUID PRIMARY KEY,
+				user_id     UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE
+			);
+
 			CREATE TABLE IF NOT EXISTS events (
-				id UUID PRIMARY KEY,
-				site_id UUID NOT NULL,
-				timestamp TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-				user_agent TEXT,
-				location TEXT
-			)
+				id          UUID PRIMARY KEY,
+				site_id     UUID NOT NULL REFERENCES sites(id) ON DELETE CASCADE,
+				timestamp   TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+				user_agent  TEXT,
+				location    TEXT
+			);
 		`)
 	}
 
