@@ -1,4 +1,7 @@
 const config = {
+	// jwt
+	jwtSecret: 'secret',
+
 	// bloom
 	bloomHost: 'localhost',
 	bloomPort: 6380,

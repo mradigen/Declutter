@@ -21,7 +21,7 @@ export type Site = z.infer<typeof SiteSchema>
 export const UserSchema = z.object({
 	userID: z.string().min(1),
 	email: z.email(),
-	password: z.string().min(1),
+	passwordHash: z.string().min(1),
 })
 
 export type User = z.infer<typeof UserSchema>

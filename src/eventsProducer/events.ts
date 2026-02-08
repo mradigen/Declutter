@@ -5,7 +5,7 @@ import { EventSchema, type Event } from '../lib/schema.js'
 import config from '../lib/config.js'
 import { checkSiteID } from './checkSiteID.js'
 
-const router = new Hono()
+export const router = new Hono()
 
 let client = initPulsar(config.pulsarServiceUrl)
 
@@ -34,5 +34,3 @@ router.post('/', sValidator('json', EventSchema), (c) => {
 	c.status(202)
 	return c.text('Event produced')
 })
-
-export { router }

@@ -20,19 +20,19 @@ export class Postgres implements IStorage {
 			CREATE TABLE IF NOT EXISTS users (
 				id          UUID PRIMARY KEY,
 				email       TEXT UNIQUE,
-				password    TEXT
+				passwordHash    TEXT
 			);
 
 			CREATE TABLE IF NOT EXISTS sites (
-				id          UUID PRIMARY KEY,
-				user_id     UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE
+				id          UUID PRIMARY KEY ON DELETE CASCADE ON UPDATE CASCADE,
+				userID     UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE
 			);
 
 			CREATE TABLE IF NOT EXISTS events (
 				id          UUID PRIMARY KEY,
-				site_id     UUID NOT NULL REFERENCES sites(id) ON DELETE CASCADE,
+				siteID     UUID NOT NULL REFERENCES sites(id) ON DELETE CASCADE ON UPDATE CASCADE,
 				timestamp   TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-				user_agent  TEXT,
+				userAgent  TEXT,
 				location    TEXT
 			);
 		`)
@@ -40,7 +40,7 @@ export class Postgres implements IStorage {
 
 	async save(event: Event): Promise<void> {
 		const res = await this.client.query(
-			'INSERT INTO events(id, site_id, timestamp, user_agent, location) VALUES($1, $2, $3, $4, $5) RETURNING *',
+			'INSERT INTO events(id, siteID, timestamp, userAgent, location) VALUES($1, $2, $3, $4, $5) RETURNING *',
 			[
 				event.eventID,
 				event.siteID,
