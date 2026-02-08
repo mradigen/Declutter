@@ -1,28 +1,32 @@
-import { initPulsar } from '../lib/pulsar.js'
+import sjson from 'secure-json-parse'
 import config from '../lib/config.js'
+import { initPulsar } from '../lib/pulsar.js'
+import { EventSchema, type Event } from '../lib/schema.js'
+import type { IStorage } from '../lib/storage.js'
 import { Postgres } from './postgres.js'
-import type { Event } from '../lib/schema.js'
 
-// Database
-const db = new Postgres()
+let db: IStorage
+
 try {
-	await db.init({
-		host: config.dbHost,
-		port: config.dbPort,
-		user: config.dbUser,
-		password: config.dbPassword,
-		database: config.dbName,
-	})
+	if (config.dbType === 'postgres') {
+		db = new Postgres({
+			host: config.dbHost,
+			port: config.dbPort,
+			user: config.dbUser,
+			password: config.dbPassword,
+			database: config.dbName,
+		})
+	} else {
+		throw new Error('Unsupported database type in config: ' + config.dbType)
+	}
 } catch (error) {
 	console.error('Failed to initialize database:', error)
 	process.exit(1)
 }
 
-async function consume(event: Event) {
-	await db.save(event)
-}
-
-// Pulsar Consumer
+/////////////////////
+// Pulsar Consumer //
+/////////////////////
 
 let client = initPulsar(config.pulsarServiceUrl)
 
@@ -35,12 +39,15 @@ let consumer = await client.subscribe({
 	subscriptionType: 'Shared',
 	// TODO: Dead letter policy
 	listener: async (message, consumer) => {
-		const event: Event = JSON.parse(message.getData().toString()) // TODO: Handle parse errors, preferably with zod
-
-		console.log(`received: ${event.eventID}`)
-
 		try {
-			await consume(event)
+			// const json: Event = JSON.parse(message.getData().toString())
+			const json: Event = sjson.parse(message.getData().toString())
+
+			const event: Event = await EventSchema.parseAsync(json)
+
+			console.log(`received: ${event.eventID}`)
+
+			await db.save(event) // consume the event and save it to the database
 			console.log('Event consumed successfully')
 			consumer.acknowledge(message)
 		} catch (error) {

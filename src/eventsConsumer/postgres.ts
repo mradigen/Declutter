@@ -5,7 +5,7 @@ import type { IStorage } from '../lib/storage.js'
 export class Postgres implements IStorage {
 	client: Pool = null as unknown as Pool
 
-	async init(config: any): Promise<void> {
+	constructor(config: any) {
 		this.client = new Pool({
 			host: config.host,
 			port: config.port,
@@ -19,7 +19,8 @@ export class Postgres implements IStorage {
 			maxLifetimeSeconds: 60,
 		})
 
-		const res = await this.client.query(`
+		// not awaiting this
+		this.client.query(`
 			CREATE TABLE IF NOT EXISTS users (
 				id          UUID PRIMARY KEY,
 				email       TEXT UNIQUE,
