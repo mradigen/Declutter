@@ -1,4 +1,4 @@
-import { Client } from 'pg'
+import { Pool } from 'pg'
 import type { User } from '../../lib/schema.js'
 import type {
 	EventsByTimeParams,
@@ -8,18 +8,35 @@ import type {
 import type { IDatabase } from './interface.js'
 
 export class Postgres implements IDatabase {
-	client: Client = null as unknown as Client
+	client: Pool = null as unknown as Pool
 
-	async init(config: any): Promise<void> {
-		this.client = new Client({
-			host: config.dbHost,
-			port: config.dbPort,
-			user: config.dbUser,
-			password: config.dbPassword,
-			database: config.dbName,
+	// async init(config: any): Promise<void> {
+	// 	this.client = new Pool({
+	// 		host: config.host,
+	// 		port: config.port,
+	// 		user: config.user,
+	// 		password: config.password,
+	// 		database: config.database,
+
+	// 		max: 20,
+	// 		idleTimeoutMillis: 30000,
+	// 		connectionTimeoutMillis: 2000,
+	// 		maxLifetimeSeconds: 60,
+	// 	})
+	// }
+	constructor(config: any) {
+		this.client = new Pool({
+			host: config.host,
+			port: config.port,
+			user: config.user,
+			password: config.password,
+			database: config.database,
+
+			max: 20,
+			idleTimeoutMillis: 30000,
+			connectionTimeoutMillis: 2000,
+			maxLifetimeSeconds: 60,
 		})
-
-		await this.client.connect()
 	}
 
 	async getUserByEmail(email: string): Promise<User | null> {

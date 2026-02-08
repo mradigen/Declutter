@@ -1,4 +1,3 @@
-import { Client } from 'pg'
 import type { User } from '../../lib/schema.js'
 import type {
 	EventsByTimeParams,
@@ -7,8 +6,6 @@ import type {
 } from '../types.js'
 
 export interface IDatabase {
-	client: Client
-	init(config: any): Promise<void>
 	getUserByEmail(email: string): Promise<User | null>
 	createUser(email: string, passwordHash: string): Promise<boolean>
 	eventsByTime(params: EventsByTimeParams): Promise<any>

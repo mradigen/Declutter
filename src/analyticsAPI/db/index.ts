@@ -3,12 +3,11 @@ import { Postgres } from './postgres.js'
 
 export async function createDB(config: any): Promise<IDatabase> {
 	let db: IDatabase
-	if (config.dbType === 'postgres') {
-		db = new Postgres()
+	if (config.type === 'postgres') {
+		db = new Postgres(config)
 	} else {
 		throw new Error(`Unsupported database type: ${config.dbType}`)
 	}
 
-	await db.init(config)
 	return db
 }
