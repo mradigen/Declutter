@@ -1,8 +1,8 @@
-import { Hono } from 'hono'
-import { initPulsar } from '../lib/pulsar.js'
 import { sValidator } from '@hono/standard-validator'
-import { EventSchema, type Event } from '../lib/schema.js'
+import { Hono } from 'hono'
 import config from '../lib/config.js'
+import { initPulsar } from '../lib/pulsar.js'
+import { EventSchema, type Event } from '../lib/schema.js'
 import { checkSiteID } from './checkSiteID.js'
 
 export const router = new Hono()
@@ -12,6 +12,8 @@ let client = initPulsar(config.pulsarServiceUrl)
 let producer = await client.createProducer({
 	topic: config.pulsarTopic,
 })
+
+console.log('Pulsar Producer initialized')
 
 router.post('/', sValidator('json', EventSchema), (c) => {
 	const event: Event = c.req.valid('json')
