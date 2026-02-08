@@ -1,5 +1,6 @@
 import Pulsar from 'pulsar-client'
 
+// TODO: Refactor into a class to be dependency injected
 let client: Pulsar.Client | undefined
 
 export function initPulsar(url: string): Pulsar.Client {
