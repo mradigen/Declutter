@@ -1,6 +1,6 @@
+import { Client } from 'pg'
 import config from '../lib/config.js'
 import { initValkey } from '../lib/valkey.js'
-import { Client } from 'pg'
 
 const client = await initValkey(config.bloomHost, config.bloomPort)
 const bloomFilterName = config.bloomFilterName
@@ -22,8 +22,6 @@ try {
 let db: Client = null as unknown as Client
 
 try {
-	// TODO: Use a connection pool instead of a single client
-	// TODO: abstract database logic into a separate module
 	db = new Client({
 		host: config.dbHost,
 		port: config.dbPort,
