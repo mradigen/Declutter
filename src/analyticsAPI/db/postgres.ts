@@ -1,12 +1,11 @@
 import { Client } from 'pg'
-import type { IDatabase } from './interface.js'
-import { generateHash, verifyHash } from '../../lib/crypto.js'
 import type { User } from '../../lib/schema.js'
 import type {
 	EventsByTimeParams,
-	UserAgentCountParams,
 	LocationCountParams,
+	UserAgentCountParams,
 } from '../types.js'
+import type { IDatabase } from './interface.js'
 
 export class Postgres implements IDatabase {
 	client: Client = null as unknown as Client
@@ -42,10 +41,6 @@ export class Postgres implements IDatabase {
 
 	async eventsByTime(params: EventsByTimeParams) {
 		const { siteID, startTime, endTime, interval } = params
-
-		// if (!params.interval) {
-		// 	params.interval = '1 hour' // TODO: default interval in config
-		// }
 
 		const res = await this.client.query(
 			`
