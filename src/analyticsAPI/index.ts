@@ -15,14 +15,17 @@ import {
 } from './types.js'
 
 const db = await createDB({
-	dbHost: config.dbHost,
-	dbPort: config.dbPort,
-	dbUser: config.dbUser,
-	dbPassword: config.dbPassword,
-	dbName: config.dbName,
+	host: config.dbHost,
+	port: config.dbPort,
+	user: config.dbUser,
+	password: config.dbPassword,
+	database: config.dbName,
+	type: config.dbType,
 })
 
-const auth = await createAuth(db)
+console.log(await db.query('SELECT * FROM events'))
+
+const auth = createAuth(db)
 
 const app = new Hono()
 
@@ -71,7 +74,7 @@ app.post(
 		const params: EventsByTimeParams = c.req.valid('json')
 
 		if (!params.interval) {
-			params.interval = '1 hour' // TODO: default interval in config
+			params.interval = '1 hour'
 		}
 
 		const result = await db.eventsByTime(params)
