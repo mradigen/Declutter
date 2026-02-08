@@ -14,6 +14,7 @@ const config = {
 	pulsarTopic: 'my-topic', // TODO: IMP learn about how many topics we need and how to structure them
 
 	// database
+	dbType: 'postgres',
 	dbHost: 'localhost',
 	dbPort: 5432,
 	dbName: 'postgres',

@@ -1,22 +1,25 @@
+import { Pool } from 'pg'
 import type { Event } from '../lib/schema.js'
 import type { IStorage } from '../lib/storage.js'
-import { Client } from 'pg'
 
 export class Postgres implements IStorage {
-	client: Client = null as unknown as Client
+	client: Pool = null as unknown as Pool
 
 	async init(config: any): Promise<void> {
-		this.client = new Client({
+		this.client = new Pool({
 			host: config.host,
 			port: config.port,
 			user: config.user,
 			password: config.password,
 			database: config.database,
+
+			max: 20,
+			idleTimeoutMillis: 30000,
+			connectionTimeoutMillis: 2000,
+			maxLifetimeSeconds: 60,
 		})
 
-		await this.client.connect()
-
-		await this.client.query(`
+		const res = await this.client.query(`
 			CREATE TABLE IF NOT EXISTS users (
 				id          UUID PRIMARY KEY,
 				email       TEXT UNIQUE,
@@ -24,7 +27,7 @@ export class Postgres implements IStorage {
 			);
 
 			CREATE TABLE IF NOT EXISTS sites (
-				id          UUID PRIMARY KEY ON DELETE CASCADE ON UPDATE CASCADE,
+				id          UUID PRIMARY KEY,
 				userID     UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE
 			);
 
