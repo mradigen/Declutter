@@ -24,19 +24,20 @@ siteRouter.use(
 	'*',
 	jwt({ secret: config.jwtSecret, alg: 'HS256' }),
 	async (c, next) => {
-		const { email } = c.get('jwtPayload') as { email: string }
-		c.set('user', { email } as User)
+		const { email, user_id } = c.get('jwtPayload') as User
+		c.set('user', { email, user_id } as User)
 		await next()
 	}
 )
 
 siteRouter.get('/', async (c) => {
 	const sites = await db.listUserSites(c.var.user)
+	console.log(sites)
 	return c.json(sites)
 })
 
 siteRouter.post('/', async (c) => {
-	const { name } = await c.req.json()
+	const { name } = await c.req.json() // TODO: handle if no json sent
 	// TODO: add to bloom filter as well
 	const success = await db.addSite(name, c.var.user)
 
@@ -62,6 +63,8 @@ siteRouter.use('/:siteid/*', async (c, next) => {
 
 	await next()
 })
+
+// TODO: IMP cache into buckets like snapgrids
 
 siteRouter.get(
 	'/:siteid/events',

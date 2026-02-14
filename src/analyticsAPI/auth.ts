@@ -1,4 +1,5 @@
 import { generateHash, verifyHash } from '../lib/crypto.js'
+import type { User } from '../lib/schema.js'
 import type { IDatabase } from './db/interface.js'
 
 class Auth {
@@ -8,15 +9,15 @@ class Auth {
 		this.db = db
 	}
 
-	async login(email: string, password: string) {
+	async login(email: string, password: string): Promise<User | false> {
 		const user = await this.db.getUserByEmail(email)
 
 		if (!user) {
 			return false
 		}
 
-		const isValid = await verifyHash(user.passwordhash, password)
-		return isValid
+		const isValid = await verifyHash(user.password_hash, password)
+		return isValid ? user : false
 	}
 
 	async signup(email: string, password: string) {

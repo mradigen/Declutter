@@ -8,14 +8,18 @@ export const authRouter = new Hono()
 authRouter.post('/login', async (c) => {
 	const { email, password } = await c.req.json()
 
-	const isValid = await auth.login(email, password)
+	const user = await auth.login(email, password)
 
-	if (!isValid) {
+	if (!user) {
 		return c.json({ success: false }, 401)
 	}
 
 	const token = await sign(
-		{ email, exp: Math.floor(Date.now() / 1000) + 60 * 5 },
+		{
+			email: user.email,
+			user_id: user.user_id,
+			exp: Math.floor(Date.now() / 1000) + 60 * 5,
+		},
 		config.jwtSecret
 	)
 
