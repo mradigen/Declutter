@@ -1,4 +1,4 @@
-import type { User } from '../../lib/schema.js'
+import type { Site, User } from '../../lib/schema.js'
 import type {
 	EventsByTimeParams,
 	LocationCountParams,
@@ -8,9 +8,12 @@ import type {
 export interface IDatabase {
 	getUserByEmail(email: string): Promise<User | null>
 	createUser(email: string, passwordHash: string): Promise<boolean>
-	eventsByTime(params: EventsByTimeParams): Promise<any>
-	userAgentCount(params: UserAgentCountParams): Promise<any>
-	locationCount(params: LocationCountParams): Promise<any>
+	addSite(name: string, user: User): Promise<boolean>
+	listUserSites(user: User): Promise<Site[]>
+	userOwnsSite(user: User, siteID: string): Promise<Site | false>
+	eventsByTime(site: Site, params: EventsByTimeParams): Promise<any>
+	userAgentCount(site: Site, params: UserAgentCountParams): Promise<any>
+	locationCount(site: Site, params: LocationCountParams): Promise<any>
 	query(text: string, params?: any[]): Promise<any>
 	close(): Promise<void>
 }

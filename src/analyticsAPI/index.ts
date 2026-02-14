@@ -1,7 +1,7 @@
 import { serve } from '@hono/node-server'
 import { Hono } from 'hono'
 import config from '../lib/config.js'
-import { createAuth } from './auth.js'
+import { createAuth } from './auth/index.js'
 import { createDB } from './db/index.js'
 import { authRouter } from './routes/auth.js'
 import { siteRouter } from './routes/sites.js'
@@ -19,7 +19,6 @@ export const auth = createAuth(db)
 
 const app = new Hono()
 
-// TODO: IMP cache into buckets like snapgrids
 app.get('/', (c) => {
 	return c.text('Analytics API is running!')
 })
