@@ -1,6 +1,6 @@
-import { generateHash, verifyHash } from '../lib/crypto.js'
-import type { User } from '../lib/schema.js'
-import type { IDatabase } from './db/interface.js'
+import { generateHash, verifyHash } from '../../lib/crypto.js'
+import type { User } from '../../lib/schema.js'
+import type { IDatabase } from '../db/interface.js'
 
 class Auth {
 	db: IDatabase
