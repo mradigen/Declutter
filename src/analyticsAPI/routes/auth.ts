@@ -5,7 +5,7 @@ import { auth } from '../index.js'
 
 export const authRouter = new Hono()
 
-authRouter.post('/auth/login', async (c) => {
+authRouter.post('/login', async (c) => {
 	const { email, password } = await c.req.json()
 
 	const isValid = await auth.login(email, password)
@@ -24,7 +24,7 @@ authRouter.post('/auth/login', async (c) => {
 	return c.json({ success: true })
 })
 
-authRouter.post('/auth/signup', async (c) => {
+authRouter.post('/signup', async (c) => {
 	const { email, password } = await c.req.json()
 
 	const success = await auth.signup(email, password)
