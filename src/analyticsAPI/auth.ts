@@ -15,11 +15,16 @@ class Auth {
 			return false
 		}
 
-		const isValid = await verifyHash(user.passwordHash, password)
+		const isValid = await verifyHash(user.passwordhash, password)
 		return isValid
 	}
 
 	async signup(email: string, password: string) {
+		const existingUser = await this.db.getUserByEmail(email)
+		if (existingUser) {
+			return false
+		}
+
 		const passwordHash = await generateHash(password)
 		return await this.db.createUser(email, passwordHash)
 	}
