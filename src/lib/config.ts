@@ -11,7 +11,7 @@ const config = {
 
 	// pulsar
 	pulsarServiceUrl: 'pulsar://localhost:6650',
-	pulsarTopic: 'my-topic', // TODO: IMP learn about how many topics we need and how to structure them
+	pulsarTopic: 'my-topic', // XXX: IMP learn about how many topics we need and how to structure them
 
 	// database
 	dbType: 'postgres',
