@@ -4,7 +4,6 @@ import config from '../../lib/config.js'
 import type { Site, User } from '../../lib/schema.js'
 
 import { sValidator } from '@hono/standard-validator'
-import { db } from '../index.js'
 import {
 	EventsByTimeParamsSchema,
 	LocationCountParamsSchema,
@@ -13,6 +12,7 @@ import {
 	type LocationCountParams,
 	type UserAgentCountParams,
 } from '../types.js'
+import { db } from './index.js'
 
 type Variables = {
 	user: User
@@ -61,8 +61,6 @@ siteRouter.use('/:site_id/*', async (c, next) => {
 	c.set('site', site)
 	await next()
 })
-
-// TODO: IMP cache into buckets like snapgrids
 
 siteRouter.get(
 	'/:site_id/events',
