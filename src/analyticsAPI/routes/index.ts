@@ -1,18 +1,20 @@
 import { serve } from '@hono/node-server'
 import { Hono } from 'hono'
+import type { Auth } from '../auth/index.js'
+import type { IEventsDB } from '../events_db/IEventsDB.js'
 import type { IUsersDB } from '../users_db/IUserDB.js'
 import { authRouter } from './auth.js'
 import { siteRouter } from './sites.js'
-import type { IEventsDB } from '../events_db/IEventsDB.js'
 
 export let user_db: IUsersDB
 export let events_db: IEventsDB
-export let auth: any // XXX: give this a type someday
+export let auth: Auth
 
+// Could use c.var instead of a singleton for the db, but i prefer it like this for now
 export function createRouter(
 	p_userdb: IUsersDB,
 	p_eventsdb: IEventsDB,
-	p_auth: any,
+	p_auth: Auth,
 	config: any = {}
 ) {
 	user_db = p_userdb

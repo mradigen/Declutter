@@ -2,7 +2,7 @@ import { generateHash, verifyHash } from '../../lib/crypto.js'
 import type { User } from '../../lib/schema.js'
 import type { IDatabase } from '../db/interface.js'
 
-class Auth {
+export class Auth {
 	db: IDatabase
 
 	constructor(db: IDatabase) {
@@ -29,8 +29,4 @@ class Auth {
 		const passwordHash = await generateHash(password)
 		return await this.db.createUser(email, passwordHash)
 	}
-}
-
-export function createAuth(db: IDatabase) {
-	return new Auth(db)
 }

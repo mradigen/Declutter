@@ -1,29 +1,26 @@
+import type { DBConfig } from '../lib/config.js'
 import config from '../lib/config.js'
-import { createAuth } from './auth/index.js'
-import { createUserDB } from './users_db/index.js'
+import { Auth } from './auth/index.js'
+import { Clickhouse } from './events_db/clickhouse.js'
 import { createRouter } from './routes/index.js'
-import { createEventsDB } from './events_db/index.js'
+import { Postgres } from './users_db/postgres.js'
 
-// XXX: IMP move all factories here, leaving each depencency file clean
+function createUsersDB(config: DBConfig) {
+	if (config.type === 'postgres') {
+		return new Postgres(config)
+	}
+	throw new Error(`Unsupported database type: ${config.type}`)
+}
 
-const user_db = await createUserDB({
-	host: config.userDBHost,
-	port: config.userDBPort,
-	user: config.userDBUser,
-	password: config.userDBPassword,
-	database: config.userDBName,
-	type: config.userDBType,
-})
+function createEventsDB(config: DBConfig) {
+	if (config.type === 'clickhouse') {
+		return new Clickhouse(config)
+	}
+	throw new Error(`Unsupported database type: ${config.type}`)
+}
 
-const events_db = await createEventsDB({
-	host: config.eventsDBHost,
-	port: config.eventsDBPort,
-	user: config.eventsDBUser,
-	password: config.eventsDBPassword,
-	database: config.eventsDBName,
-	type: config.eventsDBType,
-})
+const users_db = createUsersDB(config.users_db)
+const events_db = createEventsDB(config.events_db)
+const auth = new Auth(users_db)
 
-const auth = createAuth(user_db)
-
-const router = createRouter(user_db, events_db, auth)
+const router = createRouter(users_db, events_db, auth)
