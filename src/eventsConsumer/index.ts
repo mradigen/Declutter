@@ -37,7 +37,7 @@ let consumer = await client.subscribe({
 	topic: config.pulsarTopic,
 	subscription: subscriptionName,
 	subscriptionType: 'Shared',
-	// TODO: Dead letter policy
+	// XXX: Dead letter policy
 	listener: async (message, consumer) => {
 		try {
 			// const json: Event = JSON.parse(message.getData().toString())
@@ -45,7 +45,7 @@ let consumer = await client.subscribe({
 
 			const event: Event = await EventSchema.parseAsync(json)
 
-			console.log(`received: ${event.eventID}`)
+			console.log(`received: ${event.event_id}`)
 
 			await db.save(event) // consume the event and save it to the database
 			console.log('Event consumed successfully')
