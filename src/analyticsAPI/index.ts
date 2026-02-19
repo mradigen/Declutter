@@ -1,20 +1,29 @@
 import config from '../lib/config.js'
 import { createAuth } from './auth/index.js'
-import { createCache } from './cache/index.js'
-import { createDB } from './db/index.js'
+import { createUserDB } from './users_db/index.js'
 import { createRouter } from './routes/index.js'
+import { createEventsDB } from './events_db/index.js'
 
 // XXX: IMP move all factories here, leaving each depencency file clean
 
-const db = await createDB({
-	host: config.dbHost,
-	port: config.dbPort,
-	user: config.dbUser,
-	password: config.dbPassword,
-	database: config.dbName,
-	type: config.dbType,
+const user_db = await createUserDB({
+	host: config.userDBHost,
+	port: config.userDBPort,
+	user: config.userDBUser,
+	password: config.userDBPassword,
+	database: config.userDBName,
+	type: config.userDBType,
 })
 
-const auth = createAuth(db)
+const events_db = await createEventsDB({
+	host: config.eventsDBHost,
+	port: config.eventsDBPort,
+	user: config.eventsDBUser,
+	password: config.eventsDBPassword,
+	database: config.eventsDBName,
+	type: config.eventsDBType,
+})
 
-const router = createRouter(db, auth)
+const auth = createAuth(user_db)
+
+const router = createRouter(user_db, events_db, auth)

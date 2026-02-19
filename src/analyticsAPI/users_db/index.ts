@@ -1,8 +1,8 @@
-import type { IDatabase } from './interface.js'
+import type { IUsersDB } from './IUserDB.js'
 import { Postgres } from './postgres.js'
 
-export async function createDB(config: any): Promise<IDatabase> {
-	let db: IDatabase
+export async function createUserDB(config: any): Promise<IUsersDB> {
+	let db: IUsersDB
 	if (config.type === 'postgres') {
 		db = new Postgres(config)
 	} else {

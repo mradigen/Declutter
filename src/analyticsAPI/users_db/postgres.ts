@@ -5,9 +5,9 @@ import type {
 	LocationCountParams,
 	UserAgentCountParams,
 } from '../types.js'
-import type { IDatabase } from './interface.js'
+import type { IUserDB } from './IUserDB.js'
 
-export class Postgres implements IDatabase {
+export class Postgres implements IUserDB {
 	client: Pool = null as unknown as Pool
 
 	constructor(config: any) {
@@ -64,48 +64,6 @@ export class Postgres implements IDatabase {
 		const res = await this.client.query(
 			'SELECT * FROM sites WHERE user_id = $1',
 			[user.user_id]
-		)
-		return res.rows
-	}
-
-	async eventsByTime(site: Site, params: EventsByTimeParams) {
-		const { startTime, endTime, interval } = params
-
-		const res = await this.client.query(
-			`
-			SELECT time_bucket($4, timestamp) AS time, COUNT(*)
-			FROM events
-			WHERE site_id = $1 AND timestamp >= to_timestamp($2) AND timestamp <= to_timestamp($3)
-			GROUP BY time`,
-			[site.site_id, startTime, endTime, interval]
-		)
-		return res.rows
-	}
-
-	async userAgentCount(site: Site, params: UserAgentCountParams) {
-		const { startTime, endTime } = params
-
-		const res = await this.client.query(
-			`
-			SELECT user_agent, COUNT(*)
-			FROM events
-			WHERE site_id = $1 AND timestamp >= to_timestamp($2) AND timestamp <= to_timestamp($3)
-			GROUP BY user_agent`,
-			[site.site_id, startTime, endTime]
-		)
-		return res.rows
-	}
-
-	async locationCount(site: Site, params: LocationCountParams) {
-		const { startTime, endTime } = params
-
-		const res = await this.client.query(
-			`
-			SELECT location, COUNT(*)
-			FROM events
-			WHERE site_id = $1 AND timestamp >= to_timestamp($2) AND timestamp <= to_timestamp($3)
-			GROUP BY location`,
-			[site.site_id, startTime, endTime]
 		)
 		return res.rows
 	}

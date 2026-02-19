@@ -12,7 +12,7 @@ import {
 	type LocationCountParams,
 	type UserAgentCountParams,
 } from '../types.js'
-import { db } from './index.js'
+import { events_db, user_db } from './index.js'
 
 type Variables = {
 	user: User
@@ -32,14 +32,14 @@ siteRouter.use(
 )
 
 siteRouter.get('/', async (c) => {
-	const sites = await db.listUserSites(c.var.user)
+	const sites = await user_db.listUserSites(c.var.user)
 	return c.json(sites)
 })
 
 siteRouter.post('/', async (c) => {
 	const { name } = await c.req.json() // FIXME: handle if no json sent
 	// FIXME: add to bloom filter as well
-	const success = await db.addSite(name, c.var.user)
+	const success = await user_db.addSite(name, c.var.user)
 
 	if (!success) {
 		return c.json({ success: false }, 400)
@@ -52,7 +52,7 @@ siteRouter.post('/', async (c) => {
 
 siteRouter.use('/:site_id/*', async (c, next) => {
 	// FIXME: potential error bubble if user doesnt own site, do try/catch
-	const site = await db.userOwnsSite(c.var.user, c.req.param('site_id'))
+	const site = await user_db.userOwnsSite(c.var.user, c.req.param('site_id'))
 
 	if (!site) {
 		return c.json({ error: 'Unauthorized' }, 401)
@@ -72,7 +72,7 @@ siteRouter.get(
 			params.interval = '1 hour'
 		}
 
-		const result = await db.eventsByTime(c.var.site, params)
+		const result = await events_db.eventsByTime(c.var.site, params)
 		return c.json(result)
 	}
 )
@@ -83,7 +83,7 @@ siteRouter.get(
 	async (c) => {
 		const params: UserAgentCountParams = c.req.valid('query')
 
-		const result = await db.userAgentCount(c.var.site, params)
+		const result = await events_db.userAgentCount(c.var.site, params)
 		return c.json(result)
 	}
 )
@@ -94,7 +94,7 @@ siteRouter.get(
 	async (c) => {
 		const params: LocationCountParams = c.req.valid('query')
 
-		const result = await db.locationCount(c.var.site, params)
+		const result = await events_db.locationCount(c.var.site, params)
 		return c.json(result)
 	}
 )
