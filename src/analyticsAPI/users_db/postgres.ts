@@ -1,13 +1,8 @@
 import { Pool } from 'pg'
 import type { Site, User } from '../../lib/schema.js'
-import type {
-	EventsByTimeParams,
-	LocationCountParams,
-	UserAgentCountParams,
-} from '../types.js'
-import type { IUserDB } from './IUserDB.js'
+import type { IUsersDB } from './IUsersDB.js'
 
-export class Postgres implements IUserDB {
+export class Postgres implements IUsersDB {
 	client: Pool = null as unknown as Pool
 
 	constructor(config: any) {

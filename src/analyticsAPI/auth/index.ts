@@ -1,11 +1,11 @@
 import { generateHash, verifyHash } from '../../lib/crypto.js'
 import type { User } from '../../lib/schema.js'
-import type { IDatabase } from '../db/interface.js'
+import type { IUsersDB } from '../users_db/IUsersDB.js'
 
 export class Auth {
-	db: IDatabase
+	db: IUsersDB
 
-	constructor(db: IDatabase) {
+	constructor(db: IUsersDB) {
 		this.db = db
 	}
 

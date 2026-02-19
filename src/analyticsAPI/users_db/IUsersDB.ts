@@ -1,9 +1,4 @@
 import type { Site, User } from '../../lib/schema.js'
-import type {
-	EventsByTimeParams,
-	LocationCountParams,
-	UserAgentCountParams,
-} from '../types.js'
 
 export interface IUsersDB {
 	getUserByEmail(email: string): Promise<User | null>

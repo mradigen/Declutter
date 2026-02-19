@@ -1,12 +1,12 @@
 import { createClient } from '@clickhouse/client'
-import type { Site, User } from '../../lib/schema.js'
+import type { NodeClickHouseClient } from '@clickhouse/client/dist/client.js'
+import type { Site } from '../../lib/schema.js'
 import type {
 	EventsByTimeParams,
 	LocationCountParams,
 	UserAgentCountParams,
 } from '../types.js'
 import type { IEventsDB } from './IEventsDB.js'
-import type { NodeClickHouseClient } from '@clickhouse/client/dist/client.js'
 
 export class Clickhouse implements IEventsDB {
 	client: NodeClickHouseClient

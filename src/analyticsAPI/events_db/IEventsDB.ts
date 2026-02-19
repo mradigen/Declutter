@@ -1,4 +1,4 @@
-import type { Site, User } from '../../lib/schema.js'
+import type { Site } from '../../lib/schema.js'
 import type {
 	EventsByTimeParams,
 	LocationCountParams,
