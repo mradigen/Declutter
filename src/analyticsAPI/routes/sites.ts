@@ -4,14 +4,7 @@ import config from '../../lib/config.js'
 import type { Site, User } from '../../lib/schema.js'
 
 import { sValidator } from '@hono/standard-validator'
-import {
-	EventsByTimeParamsSchema,
-	LocationCountParamsSchema,
-	UserAgentCountParamsSchema,
-	type EventsByTimeParams,
-	type LocationCountParams,
-	type UserAgentCountParams,
-} from '../types.js'
+import { AnalyticsParamsSchema, type AnalyticsParams } from '../types.js'
 import { events_db, user_db } from './index.js'
 
 type Variables = {
@@ -64,9 +57,9 @@ siteRouter.use('/:site_id/*', async (c, next) => {
 
 siteRouter.get(
 	'/:site_id/events',
-	sValidator('query', EventsByTimeParamsSchema),
+	sValidator('query', AnalyticsParamsSchema),
 	async (c) => {
-		const params: EventsByTimeParams = c.req.valid('query')
+		const params: AnalyticsParams = c.req.valid('query')
 
 		if (!params.interval) {
 			params.interval = '1 hour'
@@ -79,9 +72,9 @@ siteRouter.get(
 
 siteRouter.get(
 	'/:site_id/useragent',
-	sValidator('query', UserAgentCountParamsSchema),
+	sValidator('query', AnalyticsParamsSchema),
 	async (c) => {
-		const params: UserAgentCountParams = c.req.valid('query')
+		const params: AnalyticsParams = c.req.valid('query')
 
 		const result = await events_db.userAgentCount(c.var.site, params)
 		return c.json(result)
@@ -90,9 +83,9 @@ siteRouter.get(
 
 siteRouter.get(
 	'/:site_id/location',
-	sValidator('query', LocationCountParamsSchema),
+	sValidator('query', AnalyticsParamsSchema),
 	async (c) => {
-		const params: LocationCountParams = c.req.valid('query')
+		const params: AnalyticsParams = c.req.valid('query')
 
 		const result = await events_db.locationCount(c.var.site, params)
 		return c.json(result)

@@ -1,11 +1,7 @@
 import { createClient } from '@clickhouse/client'
 import type { NodeClickHouseClient } from '@clickhouse/client/dist/client.js'
 import type { Site } from '../../lib/schema.js'
-import type {
-	EventsByTimeParams,
-	LocationCountParams,
-	UserAgentCountParams,
-} from '../types.js'
+import type { AnalyticsParams } from '../types.js'
 import type { IEventsDB } from './IEventsDB.js'
 
 export class Clickhouse implements IEventsDB {
@@ -20,7 +16,7 @@ export class Clickhouse implements IEventsDB {
 		})
 	}
 
-	async eventsByTime(site: Site, params: EventsByTimeParams) {
+	async eventsByTime(site: Site, params: AnalyticsParams) {
 		const { startTime, endTime, interval } = params
 
 		const res = await this.client.query({
@@ -38,7 +34,7 @@ export class Clickhouse implements IEventsDB {
 		return await res.json()
 	}
 
-	async userAgentCount(site: Site, params: UserAgentCountParams) {
+	async userAgentCount(site: Site, params: AnalyticsParams) {
 		const { startTime, endTime } = params
 
 		const res = await this.client.query({
@@ -54,7 +50,7 @@ export class Clickhouse implements IEventsDB {
 		return await res.json()
 	}
 
-	async locationCount(site: Site, params: LocationCountParams) {
+	async locationCount(site: Site, params: AnalyticsParams) {
 		const { startTime, endTime } = params
 
 		const res = await this.client.query({
@@ -63,6 +59,22 @@ export class Clickhouse implements IEventsDB {
 				FROM events
 				WHERE site_id='${site.site_id}' AND timestamp >= toDateTime(${startTime}) AND timestamp <= toDateTime(${endTime})
 				GROUP BY location
+			`,
+			format: 'JSONEachRow',
+		})
+
+		return await res.json()
+	}
+
+	async referrerCount(site: Site, params: AnalyticsParams) {
+		const { startTime, endTime } = params
+
+		const res = await this.client.query({
+			query: `
+				SELECT referrer, COUNT(*) as count
+				FROM events
+				WHERE site_id='${site.site_id}' AND timestamp >= toDateTime(${startTime}) AND timestamp <= toDateTime(${endTime})
+				GROUP BY referrer
 			`,
 			format: 'JSONEachRow',
 		})

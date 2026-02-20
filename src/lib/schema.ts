@@ -7,6 +7,8 @@ export const EventSchema = z.object({
 	// name: z.string().min(1),
 	user_agent: z.string().min(1),
 	location: z.string().min(1),
+	referrer: z.string().optional(),
+	page: z.string().min(1),
 })
 
 export type Event = z.infer<typeof EventSchema>

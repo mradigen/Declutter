@@ -2,7 +2,7 @@ import { serve } from '@hono/node-server'
 import { Hono } from 'hono'
 import type { Auth } from '../auth/index.js'
 import type { IEventsDB } from '../events_db/IEventsDB.js'
-import type { IUsersDB } from '../users_db/IUserDB.js'
+import type { IUsersDB } from '../users_db/IUsersDB.js'
 import { authRouter } from './auth.js'
 import { siteRouter } from './sites.js'
 

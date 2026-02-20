@@ -9,6 +9,8 @@ export const router = new Hono()
 
 let client = initPulsar(config.pulsarServiceUrl)
 
+// XXX: IMP implement opentelemetry tracing and metrics for a request, and export to a collector like Jaeger, so everything can be visualized
+
 let producer = await client.createProducer({
 	topic: config.pulsarTopic,
 })
@@ -18,7 +20,7 @@ console.log('Pulsar Producer initialized')
 router.post('/', sValidator('json', EventSchema), (c) => {
 	const event: Event = c.req.valid('json')
 
-	if (!checkSiteID(event.siteID)) {
+	if (!checkSiteID(event.site_id)) {
 		// c.status(400)
 		// return c.text('Invalid siteID')
 		c.status(202) // sends 202 to prevent leaking information about valid siteIDs
@@ -27,7 +29,7 @@ router.post('/', sValidator('json', EventSchema), (c) => {
 
 	event.timestamp = Date.now()
 
-	// TODO: Add more validations
+	// XXX: Add more validations
 
 	producer.send({
 		data: Buffer.from(JSON.stringify(event)),
