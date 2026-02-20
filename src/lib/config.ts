@@ -1,4 +1,15 @@
+export type DBConfig = {
+	type: string
+	host: string
+	port: number
+	name: string
+	user: string
+	password: string
+}
+
 const config = {
+	mode: 'development', // 'production' or 'development'
+
 	// jwt
 	jwtSecret: 'secret',
 
@@ -14,12 +25,23 @@ const config = {
 	pulsarTopic: 'my-topic', // XXX: IMP learn about how many topics we need and how to structure them
 
 	// database
-	dbType: 'postgres',
-	dbHost: 'localhost',
-	dbPort: 5432,
-	dbName: 'postgres',
-	dbUser: 'postgres',
-	dbPassword: 'password',
+	users_db: {
+		type: 'postgres',
+		host: 'localhost',
+		port: 5432,
+		name: 'postgres',
+		user: 'postgres',
+		password: 'password',
+	},
+
+	events_db: {
+		type: 'clickhouse',
+		host: 'localhost',
+		port: 8123,
+		name: 'default',
+		user: 'clickhouse',
+		password: 'password',
+	},
 }
 
 export default config

@@ -8,16 +8,18 @@ import { Postgres } from './postgres.js'
 let db: IStorage
 
 try {
-	if (config.dbType === 'postgres') {
+	if (config.users_db.type === 'postgres') {
 		db = new Postgres({
-			host: config.dbHost,
-			port: config.dbPort,
-			user: config.dbUser,
-			password: config.dbPassword,
-			database: config.dbName,
+			host: config.users_db.host,
+			port: config.users_db.port,
+			user: config.users_db.user,
+			password: config.users_db.password,
+			database: config.users_db.name,
 		})
 	} else {
-		throw new Error('Unsupported database type in config: ' + config.dbType)
+		throw new Error(
+			'Unsupported database type in config: ' + config.users_db.type
+		)
 	}
 } catch (error) {
 	console.error('Failed to initialize database:', error)

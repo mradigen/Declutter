@@ -23,11 +23,11 @@ let db: Client = null as unknown as Client
 
 try {
 	db = new Client({
-		host: config.dbHost,
-		port: config.dbPort,
-		user: config.dbUser,
-		password: config.dbPassword,
-		database: config.dbName,
+		host: config.users_db.host,
+		port: config.users_db.port,
+		user: config.users_db.user,
+		password: config.users_db.password,
+		database: config.users_db.name,
 	})
 
 	await db.connect()
@@ -37,10 +37,10 @@ try {
 }
 
 async function rotateBloomFilter() {
-	// TODO: Use a logger instead of console.log
+	// XXX: Use a logger instead of console.log
 	console.log('Rotating bloom filter...')
 	try {
-		// TODO: this is not atomic, figure a way to do this atomically
+		// FIXME: this is not atomic, figure a way to do this atomically
 		const res = await db.query('SELECT id FROM sites')
 
 		const siteIDs = res.rows.map((row) => row.id)
@@ -82,7 +82,7 @@ async function rotateBloomFilter() {
 }
 
 async function switchToNewBloomFilter() {
-	// TODO: Make this atomic
+	// FIXME: Make this atomic
 	try {
 		console.log('Switching to new bloom filter...')
 		await client.customCommand([
@@ -105,7 +105,7 @@ async function switchToNewBloomFilter() {
 }
 
 // Rotate bloom filter every hour
-// TODO: Use a proper scheduler instead of setInterval, e.g. node-cron
+// FIXME: Use a proper scheduler instead of setInterval, e.g. node-cron
 // setInterval(rotateBloomFilter, 60 * 60 * 1000)
 
 await db.end()
