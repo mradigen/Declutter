@@ -13,12 +13,22 @@ const config = {
 	// jwt
 	jwtSecret: 'secret',
 
+	// tracing
+	trace: {
+		enable: true,
+		url: 'http://localhost:4318/v1/traces',
+	},
+
 	// bloom
 	bloomHost: 'localhost',
 	bloomPort: 6380,
 	bloomFilterName: 'siteIDFilter',
 	bloomFilterErrorRate: 0.001,
 	bloomFilterCapacity: 50000000,
+
+	producer: {
+		listenPort: 3000,
+	},
 
 	// pulsar
 	pulsarServiceUrl: 'pulsar://localhost:6650',

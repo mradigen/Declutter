@@ -1,8 +1,18 @@
-import sjson from 'secure-json-parse'
 import config from '../lib/config.js'
+import { initTracing } from '../lib/tracing.js'
+if (config.trace.enable) {
+	initTracing('events-consumer')
+}
+const tracer = trace.getTracer('events-consumer')
+console.log('Tracing enabled:', config.trace.enable)
+
+import { propagation, context, trace } from '@opentelemetry/api'
+import sjson from 'secure-json-parse'
+
+import type { IStorage } from './storage/IStorage.js'
+
 import { initPulsar } from '../lib/pulsar.js'
 import { EventSchema, type Event } from '../lib/schema.js'
-import type { IStorage } from './storage/IStorage.js'
 import { Clickhouse } from './storage/clickhouse.js'
 
 let db: IStorage
@@ -39,24 +49,41 @@ console.log(
 	subscriptionName
 )
 
-let consumer = await client.subscribe({
+await client.subscribe({
 	topic: config.pulsarTopic,
 	subscription: subscriptionName,
 	subscriptionType: 'Shared',
 	// XXX: Dead letter policy
 	listener: async (message, consumer) => {
-		try {
-			const json: Event = sjson.parse(message.getData().toString())
-			const event: Event = await EventSchema.parseAsync(json)
-			console.log(`Received: ${event.event_id}`)
+		const properties = message.getProperties()
 
-			await db.save(event) // consume the event and save it to the database
+		const parentContext = propagation.extract(context.active(), properties)
 
-			consumer.acknowledge(message)
-			console.log(`Consumed: ${event.event_id}`)
-		} catch (error) {
-			consumer.negativeAcknowledge(message)
-			console.error(`Error consuming message: ${error}`)
-		}
+		await tracer.startActiveSpan(
+			'consume_event',
+			{ kind: 1 },
+			parentContext,
+			async (span) => {
+				try {
+					const json: Event = sjson.parse(
+						message.getData().toString()
+					)
+					const event: Event = await EventSchema.parseAsync(json)
+					console.log(`Received: ${event.event_id}`)
+
+					await db.save(event) // consume the event and save it to the database
+
+					consumer.acknowledge(message)
+					console.log(`Consumed: ${event.event_id}`)
+					span.setStatus({ code: 1 })
+				} catch (error) {
+					consumer.negativeAcknowledge(message)
+					console.error(`Error consuming message: ${error}`)
+					span.setStatus({ code: 2 })
+				} finally {
+					span.end()
+				}
+			}
+		)
 	},
 })

@@ -1,6 +1,7 @@
 import { GlideClient } from '@valkey/valkey-glide'
-import { initValkey } from '../lib/valkey.js'
+
 import config from '../lib/config.js'
+import { initValkey } from '../lib/valkey.js'
 
 const client = await initValkey(config.bloomHost, config.bloomPort)
 const bloomFilterName = config.bloomFilterName
@@ -18,8 +19,8 @@ try {
 	}
 }
 
-export async function checkSiteID(siteID: string): Promise<boolean> {
-	const bloomKey = `siteID:${siteID}`
+export async function checkSiteID(site_id: string): Promise<boolean> {
+	const bloomKey = `${site_id}`
 
 	const exists = await client.customCommand([
 		'BF.EXISTS',
@@ -30,8 +31,8 @@ export async function checkSiteID(siteID: string): Promise<boolean> {
 	return exists === 1
 }
 
-export async function setSiteID(siteID: string): Promise<boolean> {
-	const bloomKey = `siteID:${siteID}`
+export async function setSiteID(site_id: string): Promise<boolean> {
+	const bloomKey = `${site_id}`
 
 	const success = await client.customCommand([
 		'BF.ADD',
