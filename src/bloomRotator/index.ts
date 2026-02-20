@@ -1,4 +1,5 @@
 import { Client } from 'pg'
+
 import config from '../lib/config.js'
 import { initValkey } from '../lib/valkey.js'
 
@@ -41,9 +42,9 @@ async function rotateBloomFilter() {
 	console.log('Rotating bloom filter...')
 	try {
 		// FIXME: this is not atomic, figure a way to do this atomically
-		const res = await db.query('SELECT id FROM sites')
+		const res = await db.query('SELECT site_id FROM sites')
 
-		const siteIDs = res.rows.map((row) => row.id)
+		const siteIDs = res.rows.map((row) => row.site_id)
 
 		try {
 			await client.customCommand([
@@ -85,6 +86,7 @@ async function switchToNewBloomFilter() {
 	// FIXME: Make this atomic
 	try {
 		console.log('Switching to new bloom filter...')
+		await client.customCommand(['DEL', `${bloomFilterName}:old`])
 		await client.customCommand([
 			'RENAMENX',
 			bloomFilterName,
@@ -97,8 +99,8 @@ async function switchToNewBloomFilter() {
 			bloomFilterName,
 		])
 
-		// await client.customCommand(['DEL', `${bloomFilterName}:old`])
 		await client.customCommand(['DEL', newBloomFilterName])
+		console.log('Successfully switched bloom filter')
 	} catch (error) {
 		console.error('Error switching bloom filter:', error)
 	}
