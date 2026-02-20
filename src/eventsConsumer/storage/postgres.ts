@@ -1,6 +1,6 @@
 import { Pool } from 'pg'
-import type { Event } from '../lib/schema.js'
-import type { IStorage } from '../lib/storage.js'
+import type { Event } from '../../lib/schema.js'
+import type { IStorage } from './IStorage.js'
 
 export class Postgres implements IStorage {
 	client: Pool = null as unknown as Pool

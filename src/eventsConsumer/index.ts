@@ -2,23 +2,23 @@ import sjson from 'secure-json-parse'
 import config from '../lib/config.js'
 import { initPulsar } from '../lib/pulsar.js'
 import { EventSchema, type Event } from '../lib/schema.js'
-import type { IStorage } from '../lib/storage.js'
-import { Postgres } from './postgres.js'
+import type { IStorage } from './storage/IStorage.js'
+import { Clickhouse } from './storage/clickhouse.js'
 
 let db: IStorage
 
 try {
-	if (config.users_db.type === 'postgres') {
-		db = new Postgres({
-			host: config.users_db.host,
-			port: config.users_db.port,
-			user: config.users_db.user,
-			password: config.users_db.password,
-			database: config.users_db.name,
+	if (config.events_db.type === 'clickhouse') {
+		db = new Clickhouse({
+			host: config.events_db.host,
+			port: config.events_db.port,
+			user: config.events_db.user,
+			password: config.events_db.password,
+			database: config.events_db.name,
 		})
 	} else {
 		throw new Error(
-			'Unsupported database type in config: ' + config.users_db.type
+			'Unsupported database type in config: ' + config.events_db.type
 		)
 	}
 } catch (error) {
@@ -32,8 +32,12 @@ try {
 
 let client = initPulsar(config.pulsarServiceUrl)
 
-const subscriptionName =
-	'eventsConsumer-' + Math.random().toString(36).substring(2, 15)
+const subscriptionName = 'eventsConsumer'
+
+console.log(
+	'Pulsar Consumer initialized with subscription name:',
+	subscriptionName
+)
 
 let consumer = await client.subscribe({
 	topic: config.pulsarTopic,
@@ -42,19 +46,17 @@ let consumer = await client.subscribe({
 	// XXX: Dead letter policy
 	listener: async (message, consumer) => {
 		try {
-			// const json: Event = JSON.parse(message.getData().toString())
 			const json: Event = sjson.parse(message.getData().toString())
-
 			const event: Event = await EventSchema.parseAsync(json)
-
-			console.log(`received: ${event.event_id}`)
+			console.log(`Received: ${event.event_id}`)
 
 			await db.save(event) // consume the event and save it to the database
-			console.log('Event consumed successfully')
+
 			consumer.acknowledge(message)
+			console.log(`Consumed: ${event.event_id}`)
 		} catch (error) {
-			console.error('Error consuming message:', error)
 			consumer.negativeAcknowledge(message)
+			console.error(`Error consuming message: ${error}`)
 		}
 	},
 })
