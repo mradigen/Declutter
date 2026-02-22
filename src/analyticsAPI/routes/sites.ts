@@ -1,11 +1,12 @@
+import { sValidator } from '@hono/standard-validator'
 import { Hono } from 'hono'
 import { jwt } from 'hono/jwt'
-import config from '../../lib/config.js'
+
 import type { Site, User } from '../../lib/schema.js'
 
-import { sValidator } from '@hono/standard-validator'
+import config from '../../lib/config.js'
 import { AnalyticsParamsSchema, type AnalyticsParams } from '../types.js'
-import { events_db, user_db } from './index.js'
+import { events_db, queue, user_db } from './index.js'
 
 type Variables = {
 	user: User
@@ -31,11 +32,18 @@ siteRouter.get('/', async (c) => {
 
 siteRouter.post('/', async (c) => {
 	const { name } = await c.req.json() // FIXME: handle if no json sent
-	// FIXME: add to bloom filter as well
-	const success = await user_db.addSite(name, c.var.user)
 
-	if (!success) {
+	try {
+		await user_db.addSite(name, c.var.user)
+	} catch {
 		return c.json({ success: false }, 400)
+	}
+
+	try {
+		await queue.newSiteAdded({ site_id: name })
+	} catch (error) {
+		// Not critical, so we dont return an error response, but we log it for debugging
+		console.error('Failed to send new site added message to queue:', error)
 	}
 
 	return c.json({ success: true })
@@ -44,8 +52,10 @@ siteRouter.post('/', async (c) => {
 // XXX: delete site
 
 siteRouter.use('/:site_id/*', async (c, next) => {
-	// FIXME: potential error bubble if user doesnt own site, do try/catch
-	const site = await user_db.userOwnsSite(c.var.user, c.req.param('site_id'))
+	const site = await user_db.getSiteIfOwnedByUser(
+		c.var.user,
+		c.req.param('site_id')
+	)
 
 	if (!site) {
 		return c.json({ error: 'Unauthorized' }, 401)

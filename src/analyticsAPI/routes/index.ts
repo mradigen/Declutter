@@ -1,25 +1,31 @@
 import { serve } from '@hono/node-server'
 import { Hono } from 'hono'
+
 import type { Auth } from '../auth/index.js'
 import type { IEventsDB } from '../events_db/IEventsDB.js'
+import type { IQueue } from '../queue/IQueue.js'
 import type { IUsersDB } from '../users_db/IUsersDB.js'
+
 import { authRouter } from './auth.js'
 import { siteRouter } from './sites.js'
 
 export let user_db: IUsersDB
 export let events_db: IEventsDB
 export let auth: Auth
+export let queue: IQueue
 
 // Could use c.var instead of a singleton for the db, but i prefer it like this for now
 export function createRouter(
 	p_userdb: IUsersDB,
 	p_eventsdb: IEventsDB,
 	p_auth: Auth,
+	p_queue: IQueue,
 	config: any = {}
 ) {
 	user_db = p_userdb
 	events_db = p_eventsdb
 	auth = p_auth
+	queue = p_queue
 
 	const app = new Hono()
 

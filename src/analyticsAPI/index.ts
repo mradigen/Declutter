@@ -1,7 +1,9 @@
 import type { DBConfig } from '../lib/config.js'
+
 import config from '../lib/config.js'
 import { Auth } from './auth/index.js'
 import { Clickhouse } from './events_db/clickhouse.js'
+import { Pulsar } from './queue/pulsar.js'
 import { createRouter } from './routes/index.js'
 import { Postgres } from './users_db/postgres.js'
 
@@ -22,5 +24,9 @@ function createEventsDB(config: DBConfig) {
 const users_db = createUsersDB(config.users_db)
 const events_db = createEventsDB(config.events_db)
 const auth = new Auth(users_db)
+const queue = new Pulsar({
+	url: config.queue.url,
+	topic: config.queue.topics.siteAdded,
+})
 
-const router = createRouter(users_db, events_db, auth)
+const _ = createRouter(users_db, events_db, auth, queue)
