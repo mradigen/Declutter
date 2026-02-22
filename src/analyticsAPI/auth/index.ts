@@ -1,6 +1,7 @@
-import { generateHash, verifyHash } from '../../lib/crypto.js'
 import type { User } from '../../lib/schema.js'
 import type { IUsersDB } from '../users_db/IUsersDB.js'
+
+import { generateHash, verifyHash } from '../../lib/crypto.js'
 
 export class Auth {
 	db: IUsersDB
@@ -20,13 +21,13 @@ export class Auth {
 		return isValid ? user : false
 	}
 
-	async signup(email: string, password: string) {
+	async signup(email: string, password: string): Promise<void> {
 		const existingUser = await this.db.getUserByEmail(email)
 		if (existingUser) {
-			return false
+			throw new Error(`User already exists: ${email}`)
 		}
 
 		const passwordHash = await generateHash(password)
-		return await this.db.createUser(email, passwordHash)
+		await this.db.createUser(email, passwordHash)
 	}
 }

@@ -1,4 +1,5 @@
 import { Pool } from 'pg'
+
 import type { Site, User } from '../../lib/schema.js'
 import type { IUsersDB } from './IUsersDB.js'
 
@@ -30,24 +31,31 @@ export class Postgres implements IUsersDB {
 	}
 
 	// XXX: Make use of uuidv7 for userID as its fast for dbs
-	async createUser(email: string, password_hash: string): Promise<boolean> {
+	async createUser(email: string, password_hash: string): Promise<void> {
 		const res = await this.client.query(
 			'INSERT INTO users (email, password_hash) VALUES ($1, $2)',
 			[email, password_hash]
 		)
-		return res.rowCount === 1
+		if (res.rowCount === 1) {
+			throw new Error(`Add User failed: (${email})`)
+		}
 	}
 
-	async addSite(name: string, user: User): Promise<boolean> {
+	async addSite(name: string, user: User): Promise<void> {
 		const res = await this.client.query(
 			'INSERT INTO sites (name, user_id) VALUES ($1, $2) RETURNING *',
 			[name, user.user_id]
 		)
-		return res.rowCount === 1
+		if (res.rowCount === 1) {
+			throw new Error(`Add Site failed: (${name}, ${user.user_id})`)
+		}
 	}
 
 	// XXX: maybe rename this to somewthing better later, as it returns the site if user owns it, not just a boolean
-	async userOwnsSite(user: User, site_id: string): Promise<Site | false> {
+	async getSiteIfOwnedByUser(
+		user: User,
+		site_id: string
+	): Promise<Site | false> {
 		const res = await this.client.query(
 			'SELECT * FROM sites WHERE site_id = $1 AND user_id = $2',
 			[site_id, user.user_id]

@@ -1,5 +1,6 @@
 import { Hono } from 'hono'
 import { sign } from 'hono/jwt'
+
 import config from '../../lib/config.js'
 import { auth } from './index.js'
 
@@ -31,9 +32,9 @@ authRouter.post('/login', async (c) => {
 authRouter.post('/signup', async (c) => {
 	const { email, password } = await c.req.json()
 
-	const success = await auth.signup(email, password)
-
-	if (!success) {
+	try {
+		await auth.signup(email, password)
+	} catch {
 		return c.json({ success: false }, 400)
 	}
 
