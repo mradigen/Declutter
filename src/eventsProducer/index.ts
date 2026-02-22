@@ -4,7 +4,6 @@ if (config.trace.enable) {
 	initTracing('events-producer')
 }
 const tracer = trace.getTracer('my-service-name')
-console.log('Tracing enabled:', config.trace.enable)
 
 import { serve } from '@hono/node-server'
 import { httpInstrumentationMiddleware } from '@hono/otel'
@@ -22,12 +21,10 @@ app.get('/', (c) => {
 	return c.text('Events Receiver is running!')
 })
 
-let client = initPulsar(config.pulsarServiceUrl)
-
-// XXX: IMP implement opentelemetry tracing and metrics for a request, and export to a collector like Jaeger, so everything can be visualized
+let client = initPulsar(config.queue.url)
 
 let producer = await client.createProducer({
-	topic: config.pulsarTopic,
+	topic: config.queue.topics.eventAdded,
 })
 console.log('Pulsar Producer initialized')
 
@@ -93,6 +90,7 @@ app.post(
 		producer.send({
 			data: Buffer.from(JSON.stringify(validatedEvent)),
 			properties: carrier,
+			partitionKey: validatedEvent.site_id, // in case of sharding (which is bad), currently unused
 		})
 
 		c.status(202)

@@ -31,8 +31,17 @@ const config = {
 	},
 
 	// pulsar
-	pulsarServiceUrl: 'pulsar://localhost:6650',
-	pulsarTopic: 'my-topic', // XXX: IMP learn about how many topics we need and how to structure them
+	// pulsarServiceUrl: 'pulsar://localhost:6650',
+	// pulsarTopic: 'my-topic', // XXX: IMP learn about how many topics we need and how to structure them
+
+	queue: {
+		type: 'pulsar',
+		url: 'pulsar://localhost:6650',
+		topics: {
+			siteAdded: 'site-added',
+			eventAdded: 'event-added',
+		},
+	},
 
 	// database
 	users_db: {

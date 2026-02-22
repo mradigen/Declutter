@@ -40,7 +40,7 @@ try {
 // Pulsar Consumer //
 /////////////////////
 
-let client = initPulsar(config.pulsarServiceUrl)
+let client = initPulsar(config.queue.url)
 
 const subscriptionName = 'eventsConsumer'
 
@@ -50,7 +50,7 @@ console.log(
 )
 
 await client.subscribe({
-	topic: config.pulsarTopic,
+	topic: config.queue.topics.eventAdded,
 	subscription: subscriptionName,
 	subscriptionType: 'Shared',
 	// XXX: Dead letter policy
