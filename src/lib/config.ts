@@ -15,7 +15,7 @@ const config = {
 	trace: {
 		enable: true,
 		url: 'http://localhost:4318/v1/traces',
-		samplingRate: 0.1,
+		samplingRate: 1.0,
 	},
 
 	// bloom
@@ -23,7 +23,7 @@ const config = {
 	bloomPort: 6380,
 	bloomFilterName: 'siteIDFilter',
 	bloomFilterErrorRate: 0.001,
-	bloomFilterCapacity: 50000000,
+	bloomFilterCapacity: 50_000_000,
 
 	cache: {
 		host: 'localhost',

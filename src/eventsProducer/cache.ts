@@ -45,7 +45,7 @@ export class Valkey {
 		do {
 			const result = await this.client.sscan(this.config.key, cursor, {
 				match: '*',
-				count: 100_000,
+				count: 500_000,
 			})
 
 			cursor = result[0]
@@ -57,10 +57,6 @@ export class Valkey {
 			this.fliter.bulkAdd(keys)
 			console.log(totalLoaded, 'site IDs loaded into Bloom filter')
 		} while (cursor !== '0')
-
-		console.log(
-			`Finished loading ${totalLoaded} site IDs into Bloom filter`
-		)
 	}
 
 	checkSiteID(site_id: string): boolean {
@@ -74,16 +70,3 @@ export class Valkey {
 		}
 	}
 }
-
-// try {
-// 	await client.customCommand([
-// 		'BF.RESERVE',
-// 		config.bloomFilterName,
-// 		config.bloomFilterErrorRate + '',
-// 		config.bloomFilterCapacity + '',
-// 	])
-// } catch (error) {
-// 	if (error instanceof Error && error.message.includes('item exists')) {
-// 		console.log('Bloom filter already exists, skipping creation')
-// 	}
-// }

@@ -5,9 +5,11 @@ if (config.trace.enable) {
 }
 const tracer = trace.getTracer('events-producer')
 
+import type { Producer } from 'pulsar-client'
+
 import { serve } from '@hono/node-server'
 import { httpInstrumentationMiddleware } from '@hono/otel'
-import { context, propagation, trace } from '@opentelemetry/api'
+import { context, propagation, SpanStatusCode, trace } from '@opentelemetry/api'
 import { Hono } from 'hono'
 import { validator } from 'hono/validator'
 
@@ -23,22 +25,28 @@ app.get('/', (c) => {
 
 // Initialize Pulsar
 let client = initPulsar(config.queue.url)
-let producer = await client.createProducer({
-	topic: config.queue.topics.eventAdded,
-})
-console.log('Pulsar Producer initialized')
+let producer: Producer
+let cache: Valkey
+try {
+	producer = await client.createProducer({
+		topic: config.queue.topics.eventAdded,
+	})
+	console.log('Pulsar Producer initialized')
 
-// Initialize Cache
-let cache = new Valkey({
-	host: config.cache.host,
-	port: config.cache.port,
-	key: config.cache.keys.siteIDs,
-	bloomFilterCapacity: config.bloomFilterCapacity,
-	bloomFilterErrorRate: config.bloomFilterErrorRate,
-})
-await cache.init()
-await cache.cacheSiteIDs()
-console.log('Cache initialized with site IDs')
+	cache = new Valkey({
+		host: config.cache.host,
+		port: config.cache.port,
+		key: config.cache.keys.siteIDs,
+		bloomFilterCapacity: config.bloomFilterCapacity,
+		bloomFilterErrorRate: config.bloomFilterErrorRate,
+	})
+	await cache.init()
+	await cache.cacheSiteIDs()
+	console.log('Cache initialized with site IDs')
+} catch (error) {
+	console.error('Failed to initialize Queue or Cache:', error)
+	process.exit(1)
+}
 
 app.use(
 	httpInstrumentationMiddleware({
@@ -55,26 +63,30 @@ app.post(
 		const span = trace.getActiveSpan()
 		const event: Event = c.req.valid('json') as Event
 
-		// span?.addEvent('Checking in bloom filter')
-		// const siteIDExists = await checkSiteID(event.site_id)
-		const siteIDExists = await tracer.startActiveSpan(
-			'check_bloom_filter',
-			async (span) => {
-				try {
-					const result = cache.checkSiteID(event.site_id)
-					return result
-				} catch (error) {
-					span.recordException(error as Error)
-					span.setStatus({ code: 2 })
-					throw error
-				} finally {
-					span.end()
-				}
-			}
-		)
+		span?.addEvent('Checking in bloom filter')
+		const siteIDExists = cache.checkSiteID(event.site_id)
+		// No need to trace a simple Bloom filter check, as it's very fast and doesn't involve I/O. If it becomes a bottleneck, we can add tracing later.
+		// const siteIDExists = tracer.startActiveSpan(
+		// 	'check_bloom_filter',
+		// 	(span) => {
+		// 		try {
+		// 			const result = cache.checkSiteID(event.site_id)
+		// 			return result
+		// 		} catch (error) {
+		// 			span.recordException(error as Error)
+		// 			span.setStatus({ code: 2 })
+		// 			throw error
+		// 		} finally {
+		// 			span.end()
+		// 		}
+		// 	}
+		// )
 
 		if (!siteIDExists) {
-			span?.setStatus({ code: 2 })
+			span?.setStatus({
+				code: SpanStatusCode.ERROR,
+				message: 'Invalid site_id',
+			})
 			if (config.mode === 'development') {
 				c.status(400)
 				return c.text('Invalid site_id: ' + event.site_id)
@@ -91,6 +103,10 @@ app.post(
 		try {
 			validatedEvent = await EventSchema.parseAsync(event)
 		} catch (error) {
+			span?.setStatus({
+				code: SpanStatusCode.ERROR,
+				message: 'Invalid event data',
+			})
 			c.status(400)
 			return c.text('Invalid event data: ' + error)
 		}
@@ -116,6 +132,6 @@ serve(
 		port: config.producer.listenPort,
 	},
 	(info) => {
-		console.log(`Server is running on http://localhost:${info.port}`)
+		console.log(`Producer ready on http://localhost:${info.port}`)
 	}
 )
