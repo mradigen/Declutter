@@ -3,7 +3,7 @@ import { initTracing } from '../lib/tracing.js'
 if (config.trace.enable) {
 	initTracing('events-producer')
 }
-const tracer = trace.getTracer('my-service-name')
+const tracer = trace.getTracer('events-producer')
 
 import { serve } from '@hono/node-server'
 import { httpInstrumentationMiddleware } from '@hono/otel'
@@ -13,7 +13,7 @@ import { validator } from 'hono/validator'
 
 import { initPulsar } from '../lib/pulsar.js'
 import { EventSchema, type Event } from '../lib/schema.js'
-import { checkSiteID } from './checkSiteID.js'
+import { Valkey } from './cache.js'
 
 const app = new Hono()
 
@@ -21,16 +21,28 @@ app.get('/', (c) => {
 	return c.text('Events Receiver is running!')
 })
 
+// Initialize Pulsar
 let client = initPulsar(config.queue.url)
-
 let producer = await client.createProducer({
 	topic: config.queue.topics.eventAdded,
 })
 console.log('Pulsar Producer initialized')
 
+// Initialize Cache
+let cache = new Valkey({
+	host: config.cache.host,
+	port: config.cache.port,
+	key: config.cache.keys.siteIDs,
+	bloomFilterCapacity: config.bloomFilterCapacity,
+	bloomFilterErrorRate: config.bloomFilterErrorRate,
+})
+await cache.init()
+await cache.cacheSiteIDs()
+console.log('Cache initialized with site IDs')
+
 app.use(
 	httpInstrumentationMiddleware({
-		serviceName: 'my-service',
+		serviceName: 'events-producer',
 		serviceVersion: '1.0.0',
 		captureRequestHeaders: ['user-agent', 'service-name'],
 	})
@@ -49,7 +61,7 @@ app.post(
 			'check_bloom_filter',
 			async (span) => {
 				try {
-					const result = await checkSiteID(event.site_id)
+					const result = cache.checkSiteID(event.site_id)
 					return result
 				} catch (error) {
 					span.recordException(error as Error)

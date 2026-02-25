@@ -10,13 +10,12 @@ export type DBConfig = {
 const config = {
 	mode: 'development', // 'production' or 'development'
 
-	// jwt
 	jwtSecret: 'secret',
 
-	// tracing
 	trace: {
 		enable: true,
 		url: 'http://localhost:4318/v1/traces',
+		samplingRate: 0.1,
 	},
 
 	// bloom
@@ -26,13 +25,17 @@ const config = {
 	bloomFilterErrorRate: 0.001,
 	bloomFilterCapacity: 50000000,
 
+	cache: {
+		host: 'localhost',
+		port: 6379,
+		keys: {
+			siteIDs: 'site_ids',
+		},
+	},
+
 	producer: {
 		listenPort: 3000,
 	},
-
-	// pulsar
-	// pulsarServiceUrl: 'pulsar://localhost:6650',
-	// pulsarTopic: 'my-topic', // XXX: IMP learn about how many topics we need and how to structure them
 
 	queue: {
 		type: 'pulsar',
@@ -43,7 +46,6 @@ const config = {
 		},
 	},
 
-	// database
 	users_db: {
 		type: 'postgres',
 		host: 'localhost',
