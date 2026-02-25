@@ -4,7 +4,6 @@ if (config.trace.enable) {
 	initTracing('events-consumer')
 }
 const tracer = trace.getTracer('events-consumer')
-console.log('Tracing enabled:', config.trace.enable)
 
 import { propagation, context, trace } from '@opentelemetry/api'
 import sjson from 'secure-json-parse'
