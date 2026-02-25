@@ -1,11 +1,11 @@
-import { Client, MessageId, Producer } from 'pulsar-client'
+import PulsarClient from 'pulsar-client'
 
 import type { Site } from '../../lib/schema.js'
 import type { IQueue } from './IQueue.js'
 
 export class Pulsar implements IQueue {
-	client: Client | undefined
-	producer: Producer | undefined
+	client: PulsarClient.Client | undefined
+	producer: PulsarClient.Producer | undefined
 	config: any
 
 	constructor(config: { url: string; topic: string }) {
@@ -13,7 +13,7 @@ export class Pulsar implements IQueue {
 	}
 
 	async init() {
-		this.client = new Client({
+		this.client = new PulsarClient.Client({
 			serviceUrl: this.config.url,
 		})
 		this.producer = await this.client.createProducer({
@@ -21,12 +21,12 @@ export class Pulsar implements IQueue {
 		})
 	}
 
-	async newSiteAdded(site: Site): Promise<void> {
+	async newSiteAdded(site: Site | { site_id: string }): Promise<void> {
 		if (!this.producer) {
 			throw new Error('Pulsar producer not initialized')
 		}
 
-		const messageID: MessageId = await this.producer.send({
+		const messageID = await this.producer.send({
 			data: Buffer.from(JSON.stringify({ site_id: site.site_id })),
 		})
 
