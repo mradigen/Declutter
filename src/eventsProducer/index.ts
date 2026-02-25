@@ -37,8 +37,8 @@ try {
 		host: config.cache.host,
 		port: config.cache.port,
 		key: config.cache.keys.siteIDs,
-		bloomFilterCapacity: config.bloomFilterCapacity,
-		bloomFilterErrorRate: config.bloomFilterErrorRate,
+		bloomFilterCapacity: config.bloom.capacity,
+		bloomFilterErrorRate: config.bloom.errorRate,
 	})
 	await cache.init()
 	await cache.cacheSiteIDs()

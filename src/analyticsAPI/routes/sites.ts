@@ -17,7 +17,7 @@ export const siteRouter = new Hono<{ Variables: Variables }>()
 
 siteRouter.use(
 	'*',
-	jwt({ secret: config.jwtSecret, alg: 'HS256' }),
+	jwt({ secret: config.api.jwtSecret, alg: 'HS256' }),
 	async (c, next) => {
 		const { email, user_id } = c.get('jwtPayload') as User
 		c.set('user', { email, user_id } as User)

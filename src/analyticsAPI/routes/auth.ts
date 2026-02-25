@@ -21,7 +21,7 @@ authRouter.post('/login', async (c) => {
 			user_id: user.user_id,
 			exp: Math.floor(Date.now() / 1000) + 60 * 5,
 		},
-		config.jwtSecret
+		config.api.jwtSecret
 	)
 
 	c.header('Authorization', `Bearer ${token}`)
