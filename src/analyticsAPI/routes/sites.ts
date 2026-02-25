@@ -5,8 +5,8 @@ import { jwt } from 'hono/jwt'
 import type { Site, User } from '../../lib/schema.js'
 
 import config from '../../lib/config.js'
+import { events_db, queue, users_db } from '../index.js'
 import { AnalyticsParamsSchema, type AnalyticsParams } from '../types.js'
-import { events_db, queue, user_db } from './index.js'
 
 type Variables = {
 	user: User
@@ -26,7 +26,7 @@ siteRouter.use(
 )
 
 siteRouter.get('/', async (c) => {
-	const sites = await user_db.listUserSites(c.var.user)
+	const sites = await users_db.listUserSites(c.var.user)
 	return c.json(sites)
 })
 
@@ -34,7 +34,7 @@ siteRouter.post('/', async (c) => {
 	const { name } = await c.req.json() // FIXME: handle if no json sent
 
 	try {
-		await user_db.addSite(name, c.var.user)
+		await users_db.addSite(name, c.var.user)
 	} catch {
 		return c.json({ success: false }, 400)
 	}
@@ -52,7 +52,7 @@ siteRouter.post('/', async (c) => {
 // XXX: delete site
 
 siteRouter.use('/:site_id/*', async (c, next) => {
-	const site = await user_db.getSiteIfOwnedByUser(
+	const site = await users_db.getSiteIfOwnedByUser(
 		c.var.user,
 		c.req.param('site_id')
 	)

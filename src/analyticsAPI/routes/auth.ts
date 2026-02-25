@@ -2,7 +2,7 @@ import { Hono } from 'hono'
 import { sign } from 'hono/jwt'
 
 import config from '../../lib/config.js'
-import { auth } from './index.js'
+import { auth } from '../index.js'
 
 export const authRouter = new Hono()
 
