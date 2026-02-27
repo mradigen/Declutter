@@ -1,0 +1,234 @@
+# networks:
+#     pulsar:
+#         driver: bridge
+services:
+    # Start zookeeper
+    zookeeper:
+        image: apachepulsar/pulsar:latest
+        container_name: zookeeper
+        restart: on-failure
+        # networks:
+        #     - pulsar
+        volumes:
+            - ./data/zookeeper:/pulsar/data/zookeeper
+        environment:
+            - metadataStoreUrl=zk:zookeeper:2181
+            - PULSAR_MEM=-Xms256m -Xmx256m -XX:MaxDirectMemorySize=256m
+            - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaegar:4317
+            - OTEL_METRIC_EXPORT_INTERVAL=1000
+            - OTEL_SDK_DISABLED=false
+        command:
+            - bash
+            - -c
+            - |
+                bin/apply-config-from-env.py conf/zookeeper.conf && \
+                bin/generate-zookeeper-config.sh conf/zookeeper.conf && \
+                exec bin/pulsar zookeeper
+        healthcheck:
+            test: ['CMD', 'bin/pulsar-zookeeper-ruok.sh']
+            interval: 10s
+            timeout: 5s
+            retries: 30
+
+    # Init cluster metadata
+    pulsar-init:
+        container_name: pulsar-init
+        hostname: pulsar-init
+        image: apachepulsar/pulsar:latest
+        # networks:
+        #     - pulsar
+        command:
+            - bash
+            - -c
+            - |
+                bin/pulsar initialize-cluster-metadata \
+                --cluster cluster-a \
+                --zookeeper zookeeper:2181 \
+                --configuration-store zookeeper:2181 \
+                --web-service-url http://broker:8080 \
+                --broker-service-url pulsar://broker:6650
+        depends_on:
+            zookeeper:
+                condition: service_healthy
+
+    # Start bookie
+    bookie:
+        image: apachepulsar/pulsar:latest
+        container_name: bookie
+        restart: on-failure
+        # networks:
+        #     - pulsar
+        environment:
+            - clusterName=cluster-a
+            - zkServers=zookeeper:2181
+            - metadataServiceUri=metadata-store:zk:zookeeper:2181
+            # otherwise every time we run docker compose up or down we fail to start due to Cookie
+            # See: https://github.com/apache/bookkeeper/blob/405e72acf42bb1104296447ea8840d805094c787/bookkeeper-server/src/main/java/org/apache/bookkeeper/bookie/Cookie.java#L57-68
+            - advertisedAddress=bookie
+            - BOOKIE_MEM=-Xms512m -Xmx512m -XX:MaxDirectMemorySize=256m
+            - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaegar:4317
+            - OTEL_METRIC_EXPORT_INTERVAL=1000
+            - OTEL_SDK_DISABLED=false
+        depends_on:
+            zookeeper:
+                condition: service_healthy
+            pulsar-init:
+                condition: service_completed_successfully
+        # Map the local directory to the container to avoid bookie startup failure due to insufficient container disks.
+        volumes:
+            - ./data/bookkeeper:/pulsar/data/bookkeeper
+        command: bash -c "bin/apply-config-from-env.py conf/bookkeeper.conf && exec bin/pulsar bookie"
+
+    # Start broker
+    broker:
+        image: apachepulsar/pulsar:latest
+        container_name: broker
+        hostname: broker
+        restart: on-failure
+        # networks:
+        #     - pulsar
+        environment:
+            - metadataStoreUrl=zk:zookeeper:2181
+            - zookeeperServers=zookeeper:2181
+            - clusterName=cluster-a
+            - managedLedgerDefaultEnsembleSize=1
+            - managedLedgerDefaultWriteQuorum=1
+            - managedLedgerDefaultAckQuorum=1
+            - advertisedAddress=broker
+            - advertisedListeners=external:pulsar://broker:6650
+            - PULSAR_MEM=-Xms512m -Xmx512m -XX:MaxDirectMemorySize=256m
+            - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaegar:4317
+            - OTEL_METRIC_EXPORT_INTERVAL=1000
+            - OTEL_SDK_DISABLED=false
+        depends_on:
+            zookeeper:
+                condition: service_healthy
+            bookie:
+                condition: service_started
+        ports:
+            - '6650:6650'
+            - '8080:8080'
+        command: bash -c "bin/apply-config-from-env.py conf/broker.conf && exec bin/pulsar broker"
+
+    cache:
+        # image: bitnami/valkey:latest
+        image: valkey/valkey:alpine
+        ports:
+            - 6379:6379
+
+    db:
+        # image: timescale/timescaledb-ha:pg18
+        image: timescale/timescaledb:latest-pg18
+        ports:
+            - '5432:5432'
+        environment:
+            - POSTGRES_PASSWORD=password
+            - PGDATA=/pgdata
+        volumes:
+            - ./data/timescaledb:/pgdata
+
+    eventsdb:
+        image: clickhouse/clickhouse-server:25.3.2-alpine
+        ulimits:
+            nofile:
+                soft: 262144
+                hard: 262144
+        volumes:
+            - ./data/clickhouse:/var/lib/clickhouse
+            - ./data/clickhouse_log:/var/log/clickhouse-server
+            # - ./clickhouse/init:/docker-entrypoint-initdb.d
+        healthcheck:
+            test: ['CMD', 'clickhouse-client', '--query', 'SELECT 1']
+            interval: 10s
+            timeout: 5s
+            retries: 5
+        environment:
+            CLICKHOUSE_USER: clickhouse
+            CLICKHOUSE_PASSWORD: password
+        ports:
+            - '9000:9000'
+            - '8123:8123'
+
+    jaegar:
+        image: cr.jaegertracing.io/jaegertracing/jaeger:2.15.0
+        # networks:
+        #     - pulsar
+        ports:
+            # - 9411:9411
+            # - 5778:5778
+            - 4318:4318
+            # - 4317:4317
+            - 16686:16686
+
+    consumer:
+        image: declutter/consumer:latest
+        # networks:
+        #     - pulsar
+        environment:
+            NODE_NO_WARNINGS: 1
+            NODE_ENV: production
+            QUEUE_URL: pulsar://broker:6650
+            EVENTS_DB_HOST: eventsdb
+            CACHE_HOST: cache
+            TRACE_URL: http://jaegar:4318/v1/traces
+            TRACE_ENABLE: true
+            TRACE_SAMPLING_RATE: 1.0
+        depends_on:
+            broker:
+                condition: service_started
+            eventsdb:
+                condition: service_healthy
+            cache:
+                condition: service_started
+            # jaegar:
+            #     condition: service_started
+
+    producer:
+        image: declutter/producer:latest
+        # networks:
+        #     - pulsar
+        environment:
+            NODE_NO_WARNINGS: 1
+            NODE_ENV: production
+            QUEUE_URL: pulsar://broker:6650
+            CACHE_HOST: cache
+            # BLOOM_CAPACITY: 1000000
+            TRACE_URL: http://jaegar:4318/v1/traces
+            TRACE_ENABLE: true
+            TRACE_SAMPLING_RATE: 1.0
+        depends_on:
+            broker:
+                condition: service_started
+            cache:
+                condition: service_started
+            # jaegar:
+            #     condition: service_started
+
+    api:
+        image: declutter/api:latest
+        # networks:
+        #     - pulsar
+        ports:
+            - 4000:4000
+        environment:
+            NODE_NO_WARNINGS: 1
+            JWT_SECRET: somethingsecure
+            NODE_ENV: production
+            QUEUE_URL: pulsar://broker:6650
+            USERS_DB_HOST: db
+            EVENTS_DB_HOST: eventsdb
+            CACHE_HOST: cache
+            TRACE_URL: http://jaegar:4318/v1/traces
+            TRACE_ENABLE: true
+            TRACE_SAMPLING_RATE: 1.0
+        depends_on:
+            broker:
+                condition: service_started
+            db:
+                condition: service_started
+            eventsdb:
+                condition: service_healthy
+            cache:
+                condition: service_started
+            # jaegar:
+            #     condition: service_started
