@@ -1,0 +1,11 @@
+{
+	"name": "@declutter/queue",
+	"version": "1.0.0",
+	"type": "module",
+	"exports": {
+		".": "./src/index.ts"
+	},
+	"dependencies": {
+		"pulsar-client": "^1.16.0"
+	}
+}

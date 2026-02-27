@@ -1,0 +1,15 @@
+{
+	"name": "@declutter/site-script",
+	"version": "1.0.0",
+	"type": "module",
+	"scripts": {
+		"build": "esbuild src/index.ts --bundle --outfile=dist/script.js --platform=browser --minify"
+	},
+	"dependencies": {
+		"@declutter/lib": "workspace:*"
+	},
+	"devDependencies": {
+		"esbuild": "^0.27.2",
+		"typescript": "^5.8.3"
+	}
+}

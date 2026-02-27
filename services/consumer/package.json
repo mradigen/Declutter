@@ -1,0 +1,27 @@
+{
+	"name": "@declutter/consumer",
+	"version": "1.0.0",
+	"type": "module",
+	"scripts": {
+		"dev": "tsx watch src/index.ts",
+		"start": "tsx src/index.ts",
+		"build": "node esbuild.config.js"
+	},
+	"dependencies": {
+		"@clickhouse/client": "^1.17.0",
+		"@declutter/lib": "workspace:*",
+		"@declutter/queue": "workspace:*",
+		"@declutter/tracing": "workspace:*",
+		"@opentelemetry/api": "^1.9.0",
+		"@valkey/valkey-glide": "^2.2.6",
+		"pg": "^8.18.0",
+		"secure-json-parse": "^4.1.0"
+	},
+	"devDependencies": {
+		"@types/node": "^20.11.17",
+		"@types/pg": "^8.16.0",
+		"esbuild": "^0.27.3",
+		"tsx": "^4.7.1",
+		"typescript": "^5.8.3"
+	}
+}
