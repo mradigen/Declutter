@@ -84,6 +84,23 @@ export class Clickhouse implements IEventsDB {
 		return await res.json()
 	}
 
+	async topPages(site: Site, params: AnalyticsParams) {
+		const { startTime, endTime } = params
+
+		const res = await this.client.query({
+			query: `
+				SELECT page, COUNT(*) as count
+				FROM events
+				WHERE site_id='${site.site_id}' AND timestamp >= toDateTime(${startTime}) AND timestamp <= toDateTime(${endTime})
+				GROUP BY page
+				ORDER BY count DESC
+			`,
+			format: 'JSONEachRow',
+		})
+
+		return await res.json()
+	}
+
 	async close(): Promise<void> {
 		await this.client.close()
 	}

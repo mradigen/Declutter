@@ -34,7 +34,8 @@ authRouter.post('/signup', async (c) => {
 
 	try {
 		await auth.signup(email, password)
-	} catch {
+	} catch (e) {
+		console.log(e)
 		return c.json({ success: false }, 400)
 	}
 

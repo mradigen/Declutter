@@ -101,3 +101,25 @@ siteRouter.get(
 		return c.json(result)
 	}
 )
+
+siteRouter.get(
+	'/:site_id/referrer',
+	sValidator('query', AnalyticsParamsSchema),
+	async (c) => {
+		const params: AnalyticsParams = c.req.valid('query')
+
+		const result = await events_db.referrerCount(c.var.site, params)
+		return c.json(result)
+	}
+)
+
+siteRouter.get(
+	'/:site_id/toppages',
+	sValidator('query', AnalyticsParamsSchema),
+	async (c) => {
+		const params: AnalyticsParams = c.req.valid('query')
+
+		const result = await events_db.topPages(c.var.site, params)
+		return c.json(result)
+	}
+)

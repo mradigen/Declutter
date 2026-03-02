@@ -7,5 +7,6 @@ export interface IEventsDB {
 	userAgentCount(site: Site, params: AnalyticsParams): Promise<any>
 	locationCount(site: Site, params: AnalyticsParams): Promise<any>
 	referrerCount(site: Site, params: AnalyticsParams): Promise<any>
+	topPages(site: Site, params: AnalyticsParams): Promise<any>
 	close(): Promise<void>
 }
