@@ -16,7 +16,7 @@
 		"@hono/standard-validator": "^0.2.2",
 		"@opentelemetry/api": "^1.9.0",
 		"@valkey/valkey-glide": "^2.2.6",
-		"fastbloom": "^0.1.4",
+		"fastbloom": "^0.1.8",
 		"hono": "^4.11.7",
 		"pulsar-client": "^1.16.0",
 		"secure-json-parse": "^4.1.0"

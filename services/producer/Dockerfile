@@ -17,7 +17,7 @@ COPY packages/queue/package.json packages/queue/
 COPY packages/tracing/package.json packages/tracing/
 COPY services/api/package.json services/api/
 
-RUN pnpm install --frozen-lockfile
+RUN --mount=type=cache,id=pnpm,target=/root/.local/share/pnpm/store pnpm install --frozen-lockfile
 
 COPY packages/ packages/
 COPY services/producer/ services/producer/
@@ -34,8 +34,6 @@ WORKDIR /app
 RUN npm install pulsar-client @valkey/valkey-glide fastbloom
 
 COPY --from=build /app/services/producer/dist/index.js ./index.js
-
-RUN apk add --no-cache gcompat # this is needed cause the fastbloom ci mistakenly builds glibc into musl
 
 EXPOSE 4000
 CMD ["node", "index.js"]
