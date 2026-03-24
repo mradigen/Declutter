@@ -1,5 +1,5 @@
 import config from '@declutter/lib/config'
-import { initTracing } from '@declutter/tracing'
+import { initTracing, withSpan } from '@declutter/tracing'
 if (config.trace.enable) {
 	initTracing('events-consumer')
 }
@@ -7,7 +7,13 @@ const tracer = trace.getTracer('events-consumer')
 
 import { EventSchema, type Event } from '@declutter/lib/schema'
 import { Pulsar } from '@declutter/queue'
-import { propagation, context, trace, SpanStatusCode } from '@opentelemetry/api'
+import {
+	propagation,
+	context,
+	trace,
+	SpanStatusCode,
+	type Span,
+} from '@opentelemetry/api'
 import sjson from 'secure-json-parse'
 
 import type { IStorage } from './storage/IStorage.js'
@@ -47,6 +53,35 @@ try {
 	process.exit(1)
 }
 
+async function processEvent(
+	eventPayload: string,
+	db: IStorage,
+	cache: Valkey,
+	span: Span
+): Promise<void> {
+	const json = sjson.parse(eventPayload)
+	const event: Event = await EventSchema.parseAsync(json)
+	console.log(`Received: ${event.event_id}`)
+
+	// Check cache before saving
+	span.addEvent('Checking site_id in cache', { site_id: event.site_id })
+	const isValidSite = await cache.checkSiteID(event.site_id)
+	span.addEvent('DB save decision', { isValidSite })
+
+	if (isValidSite) {
+		await withSpan(tracer, 'save_event_to_db', async (span) => {
+			await db.save(event)
+			console.log(`Saved event ${event.event_id} to database`)
+			span.setStatus({
+				code: SpanStatusCode.OK,
+				message: 'Event saved in DB successfully',
+			})
+		})
+	} else {
+		console.warn(`Invalid site_id: ${event.site_id}, dropping event.`)
+	}
+}
+
 /////////////////////
 // Pulsar Consumer //
 /////////////////////
@@ -62,95 +97,31 @@ try {
 		subscriptionType: 'Shared',
 		// XXX: Dead letter policy
 		listener: async (message, consumer) => {
-			const properties = message.getProperties()
-
 			const parentContext = propagation.extract(
 				context.active(),
-				properties
+				message.getProperties()
 			)
 
-			await tracer.startActiveSpan(
+			await withSpan(
+				tracer,
 				'consume_event',
-				{ kind: 1 },
-				parentContext,
 				async (span) => {
 					try {
-						const json: Event = sjson.parse(
-							message.getData().toString()
+						await processEvent(
+							message.getData().toString(),
+							db,
+							cache,
+							span
 						)
-						const event: Event = await EventSchema.parseAsync(json)
-						console.log(`Received: ${event.event_id}`)
-
-						// Check cache before saving
-						span.addEvent('Checking site_id in cache', {
-							site_id: event.site_id,
-						})
-						const isValidSite = await cache.checkSiteID(
-							event.site_id
-						)
-
-						span.addEvent('DB save decision', {
-							isValidSite,
-						})
-						if (isValidSite) {
-							await tracer.startActiveSpan(
-								'save_event_to_db',
-								async (saveSpan) => {
-									try {
-										await db.save(event)
-										console.log(
-											`Saved event ${event.event_id} to database`
-										)
-										saveSpan.setStatus({
-											code: SpanStatusCode.OK,
-											message:
-												'Event saved in DB successfully',
-										})
-									} catch (error) {
-										saveSpan.recordException(error as Error)
-										saveSpan.setStatus({
-											code: SpanStatusCode.ERROR,
-											message: 'Failed to save event',
-										})
-										throw error
-									} finally {
-										saveSpan.end()
-									}
-								}
-							)
-						} else {
-							console.warn(
-								`Invalid site_id: ${event.site_id}, dropping event.`
-							)
-						}
-
-						// Alternative without nested spans:
-						// if (isValidSite) {
-						// 	await db.save(event) // consume the event and save it to the database
-						// 	console.log(`Consumed: ${event.event_id}`)
-						// } else {
-						// 	console.warn(
-						// 		`Invalid site_id: ${event.site_id}, dropping event.`
-						// 	)
-						// }
-
 						span.addEvent('Acknowledging message to Pulsar')
 						consumer.acknowledge(message)
-						span.setStatus({
-							code: SpanStatusCode.OK,
-							message: 'Message consumed successfully',
-						})
 					} catch (error) {
 						consumer.negativeAcknowledge(message)
-						console.error(`Error consuming message: ${error}`)
-						span.setStatus({
-							code: SpanStatusCode.ERROR,
-							message: 'Failed to consume message',
-						})
-					} finally {
-						span.end()
+						console.error(`Error processing event: ${error}`)
 					}
-				}
+				},
+				{ kind: 1 },
+				parentContext
 			)
 		},
 	})

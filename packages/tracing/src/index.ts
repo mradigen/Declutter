@@ -1,4 +1,11 @@
 import config from '@declutter/lib/config'
+import {
+	SpanStatusCode,
+	type Context,
+	type Span,
+	type SpanOptions,
+	type Tracer,
+} from '@opentelemetry/api'
 import { getNodeAutoInstrumentations } from '@opentelemetry/auto-instrumentations-node'
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-proto'
 import { resourceFromAttributes } from '@opentelemetry/resources'
@@ -43,4 +50,42 @@ export function initTracing(serviceName: string) {
 	})
 
 	console.log(`OpenTelemetry initialized for service: ${serviceName}`)
+}
+
+export async function withSpan<T>(
+	tracer: Tracer,
+	spanName: string,
+	fn: (span: Span) => Promise<T>,
+	options?: SpanOptions,
+	context?: Context
+): Promise<T> {
+	const spanHandler = async (span: Span): Promise<T> => {
+		try {
+			const result = await fn(span)
+			span.setStatus({ code: SpanStatusCode.OK })
+			return result
+		} catch (error) {
+			span.recordException(error as Error)
+			span.setStatus({
+				code: SpanStatusCode.ERROR,
+				message:
+					error instanceof Error ? error.message : 'Unknown error',
+			})
+
+			throw error // Rethrow the error after recording it in the span
+		} finally {
+			span.end()
+		}
+	}
+
+	if (context) {
+		return tracer.startActiveSpan(
+			spanName,
+			options || {},
+			context,
+			spanHandler
+		)
+	}
+
+	return tracer.startActiveSpan(spanName, options || {}, spanHandler)
 }

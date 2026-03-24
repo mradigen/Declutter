@@ -70,22 +70,6 @@ app.post(
 
 		span?.addEvent('Checking in bloom filter')
 		const siteIDExists = cache.checkSiteID(event.site_id)
-		// No need to trace a simple Bloom filter check, as it's very fast and doesn't involve I/O. If it becomes a bottleneck, we can add tracing later.
-		// const siteIDExists = tracer.startActiveSpan(
-		// 	'check_bloom_filter',
-		// 	(span) => {
-		// 		try {
-		// 			const result = cache.checkSiteID(event.site_id)
-		// 			return result
-		// 		} catch (error) {
-		// 			span.recordException(error as Error)
-		// 			span.setStatus({ code: 2 })
-		// 			throw error
-		// 		} finally {
-		// 			span.end()
-		// 		}
-		// 	}
-		// )
 
 		if (!siteIDExists) {
 			span?.setStatus({
