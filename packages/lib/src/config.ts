@@ -8,68 +8,6 @@ export type DBConfig = {
 }
 
 const config = {
-	mode: 'development', // 'production' or 'development'
-
-	api: {
-		jwtSecret: 'secret',
-	},
-
-	trace: {
-		enable: true,
-		url: 'http://localhost:4318/v1/traces',
-		samplingRate: 1.0,
-	},
-
-	// bloom
-	// bloomHost: 'localhost',
-	// bloomPort: 6380,
-	// bloomFilterName: 'siteIDFilter',
-	bloom: {
-		errorRate: 0.001,
-		capacity: 50_000_000,
-	},
-
-	cache: {
-		host: 'localhost',
-		port: 6379,
-		keys: {
-			siteIDs: 'site_ids',
-		},
-	},
-
-	producer: {
-		listenPort: 3000,
-	},
-
-	queue: {
-		type: 'pulsar',
-		url: 'pulsar://localhost:6650',
-		topics: {
-			siteAdded: 'site-added',
-			eventAdded: 'event-added',
-		},
-	},
-
-	users_db: {
-		type: 'postgres',
-		host: 'localhost',
-		port: 5432,
-		name: 'postgres',
-		user: 'postgres',
-		password: 'password',
-	},
-
-	events_db: {
-		type: 'clickhouse',
-		host: 'localhost',
-		port: 8123,
-		name: 'default',
-		user: 'clickhouse',
-		password: 'password',
-	},
-}
-
-const prodConfig = {
 	mode: process.env.NODE_ENV ?? 'development',
 
 	api: {
@@ -151,8 +89,6 @@ const prodConfig = {
 	},
 }
 
-const chosenConfig = process.env.NODE_ENV === 'production' ? prodConfig : config
+console.log(config)
 
-console.log(chosenConfig)
-
-export default chosenConfig
+export default config

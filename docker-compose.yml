@@ -95,7 +95,8 @@ services:
             - managedLedgerDefaultWriteQuorum=1
             - managedLedgerDefaultAckQuorum=1
             - advertisedAddress=broker
-            - advertisedListeners=external:pulsar://broker:6650
+            # - advertisedListeners=external:pulsar://localhost:6650 # for localhost
+            - advertisedListeners=external:pulsar://broker:6650 # for docker compose containers
             - PULSAR_MEM=-Xms512m -Xmx512m -XX:MaxDirectMemorySize=256m
             - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaegar:4317
             - OTEL_METRIC_EXPORT_INTERVAL=1000
@@ -109,6 +110,12 @@ services:
             - '6650:6650'
             - '8080:8080'
         command: bash -c "bin/apply-config-from-env.py conf/broker.conf && exec bin/pulsar broker"
+        healthcheck:
+            test: ['CMD', 'curl', '-f', 'http://localhost:8080/admin/v2/brokers/health']
+            interval: 10s
+            timeout: 5s
+            retries: 30
+            start_period: 30s
 
     cache:
         # image: bitnami/valkey:latest
@@ -161,12 +168,12 @@ services:
             - 16686:16686
 
     consumer:
-        image: declutter/consumer:latest
-        # networks:
-        #     - pulsar
+        profiles: [dev]
+        build:
+            context: .
+            dockerfile: services/consumer/Dockerfile.dev
         environment:
             NODE_NO_WARNINGS: 1
-            NODE_ENV: production
             QUEUE_URL: pulsar://broker:6650
             EVENTS_DB_HOST: eventsdb
             CACHE_HOST: cache
@@ -175,45 +182,67 @@ services:
             TRACE_SAMPLING_RATE: 1.0
         depends_on:
             broker:
-                condition: service_started
+                condition: service_healthy
             eventsdb:
                 condition: service_healthy
             cache:
                 condition: service_started
-            # jaegar:
-            #     condition: service_started
+        develop:
+            watch:
+                - action: sync
+                  path: ./services/consumer/src
+                  target: /app/services/consumer/src
+                - action: sync
+                  path: ./packages
+                  target: /app/packages
+                - action: rebuild
+                  path: ./services/consumer/package.json
+                - action: rebuild
+                  path: ./pnpm-lock.yaml
 
     producer:
-        image: declutter/producer:latest
-        # networks:
-        #     - pulsar
+        profiles: [dev]
+        build:
+            context: .
+            dockerfile: services/producer/Dockerfile.dev
+        ports:
+            - 3000:3000
         environment:
             NODE_NO_WARNINGS: 1
-            NODE_ENV: production
             QUEUE_URL: pulsar://broker:6650
+            PRODUCER_PORT: 3000
             CACHE_HOST: cache
-            # BLOOM_CAPACITY: 1000000
             TRACE_URL: http://jaegar:4318/v1/traces
             TRACE_ENABLE: true
             TRACE_SAMPLING_RATE: 1.0
         depends_on:
             broker:
-                condition: service_started
+                condition: service_healthy
             cache:
                 condition: service_started
-            # jaegar:
-            #     condition: service_started
+        develop:
+            watch:
+                - action: sync
+                  path: ./services/producer/src
+                  target: /app/services/producer/src
+                - action: sync
+                  path: ./packages
+                  target: /app/packages
+                - action: rebuild
+                  path: ./services/producer/package.json
+                - action: rebuild
+                  path: ./pnpm-lock.yaml
 
     api:
-        image: declutter/api:latest
-        # networks:
-        #     - pulsar
+        profiles: [dev]
+        build:
+            context: .
+            dockerfile: services/api/Dockerfile.dev
         ports:
-            - 4000:4000
+            - 5000:5000
         environment:
             NODE_NO_WARNINGS: 1
             JWT_SECRET: somethingsecure
-            NODE_ENV: production
             QUEUE_URL: pulsar://broker:6650
             USERS_DB_HOST: db
             EVENTS_DB_HOST: eventsdb
@@ -223,12 +252,22 @@ services:
             TRACE_SAMPLING_RATE: 1.0
         depends_on:
             broker:
-                condition: service_started
+                condition: service_healthy
             db:
                 condition: service_started
             eventsdb:
                 condition: service_healthy
             cache:
                 condition: service_started
-            # jaegar:
-            #     condition: service_started
+        develop:
+            watch:
+                - action: sync
+                  path: ./services/api/src
+                  target: /app/services/api/src
+                - action: sync
+                  path: ./packages
+                  target: /app/packages
+                - action: rebuild
+                  path: ./services/api/package.json
+                - action: rebuild
+                  path: ./pnpm-lock.yaml

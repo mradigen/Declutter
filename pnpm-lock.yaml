@@ -197,8 +197,8 @@ importers:
         specifier: ^2.2.6
         version: 2.2.6
       fastbloom:
-        specifier: ^0.1.4
-        version: 0.1.4
+        specifier: ^0.1.8
+        version: 0.1.8
       hono:
         specifier: ^4.11.7
         version: 4.11.7
@@ -1730,8 +1730,8 @@ packages:
   extend@3.0.2:
     resolution: {integrity: sha512-fjquC59cD7CyW6urNXK0FBufkZcoiGG80wTuPujX590cB5Ttln20E2UB4S/WARVqhXffZl2LNgS+gQdPIIim/g==}
 
-  fastbloom@0.1.4:
-    resolution: {integrity: sha512-5pN1APNPGbHnrCwN8y/wWRMQWRIcg+hFnz/5Z5h/thwZLm+7MDN9gnpo3hT5ge5823iltN2e5GGrwuzWYGfdKQ==}
+  fastbloom@0.1.8:
+    resolution: {integrity: sha512-1gwiIjBIAFA6h1qanCaitqysWJIy8ewN1rNiIuKrY8BA6Lo21tePR8XKJwW499k1ViJxEMlfpQTlc9n6prkWAQ==}
 
   fetch-blob@3.2.0:
     resolution: {integrity: sha512-7yAQpD2UMJzLi1Dqv7qFYnPbaPx7ZfFK6PiIxQ4PfkGPyNyl2Ugx+a/umUonmKqjhM4DnfbMvdX6otXq83soQQ==}
@@ -3619,7 +3619,7 @@ snapshots:
 
   extend@3.0.2: {}
 
-  fastbloom@0.1.4: {}
+  fastbloom@0.1.8: {}
 
   fetch-blob@3.2.0:
     dependencies:
