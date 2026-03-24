@@ -1,0 +1,108 @@
+##############
+## PRODUCER ##
+##############
+
+# @name valid-event
+POST http://localhost:3000/event
+Content-Type: application/json
+
+{
+    "event_id": "{{$guid}}",
+    "site_id": "bbbbbbbb-bbbb-4bbb-bbbb-bbbbbbbbbbbb",
+    "timestamp": {{$timestamp}},
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/",
+    "location": "1.1.1.1",
+    "referrer": "https://example.com",
+    "page": "/home"
+}
+
+###
+
+# @name invalid-event
+POST http://localhost:3000/event
+Content-Type: application/json
+
+{
+    "event_id": "{{$guid}}",
+    "site_id": "2cab6227-3085-4700-88b7-f38d1340f6c4",
+    "timestamp": {{$timestamp}},
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/",
+    "location": "1.1.1.1",
+    "referrer": "https://example.com",
+    "page": "/home"
+}
+
+###
+POST http://localhost:3000/event
+Content-Type: application/json
+
+{
+    "event_id": "{{$guid}}",
+    "site_id": "bbbbbbbb-bbbb-4bbb-bbbb-bbbbbbbbbbbb",
+    "timestamp": {{$timestamp}},
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/",
+    "location": "1.1.1.1",
+    "referrer": "https://example.com",
+    "page": "/home"
+}
+
+###################
+## ANALYTICS API ##
+###################
+@baseUrl = http://localhost:5000
+
+# @name signup
+POST {{baseUrl}}/auth/signup
+Content-Type: application/json
+
+{
+    "email": "asd@asd.com",
+    "password": "passworda"
+}
+
+###
+
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+    "email": "asd@asd.com",
+    "password": "password"
+}
+
+###
+
+# @name sites
+GET http://localhost:4000/sites
+Authorization: {{login.response.headers.authorization}}
+
+###
+
+# @name eventsByHour
+GET http://localhost:4000/sites/bbbbbbbb-bbbb-4bbb-bbbb-bbbbbbbbbbbb/events?startTime=1690000000&endTime=1799999999&interval=1%20hour
+Authorization: {{login.response.headers.authorization}}
+
+###
+
+# @name eventsByMinute
+GET http://localhost:4000/sites/bbbbbbbb-bbbb-4bbb-bbbb-bbbbbbbbbbbb/events?startTime=1690000000&endTime=1799999999&interval=1%20minute
+Authorization: {{login.response.headers.authorization}}
+
+###
+
+# @name eventsBySecond
+GET http://localhost:4000/sites/bbbbbbbb-bbbb-4bbb-bbbb-bbbbbbbbbbbb/events?startTime=1690000000&endTime=1799999999&interval=1%20second
+Authorization: {{login.response.headers.authorization}}
+
+###
+
+# @name useragent
+GET http://localhost:4000/sites/bbbbbbbb-bbbb-4bbb-bbbb-bbbbbbbbbbbb/useragent?startTime=1690000000&endTime=1799999999
+Authorization: {{login.response.headers.authorization}}
+
+###
+
+# @name location
+GET http://localhost:4000/sites/bbbbbbbb-bbbb-4bbb-bbbb-bbbbbbbbbbbb/location?startTime=1690000000&endTime=1799999999
+Authorization: {{login.response.headers.authorization}}
