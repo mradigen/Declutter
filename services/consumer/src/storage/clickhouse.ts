@@ -14,13 +14,18 @@ export class Clickhouse implements IStorage {
 			username: config.user,
 			password: config.password,
 			database: config.database,
+			clickhouse_settings: {
+				async_insert: 1,
+				wait_for_async_insert: 1, // XXX: test with or without this
+				async_insert_deduplicate: 1,
+			},
 		})
 	}
 
 	async save(event: Event): Promise<void> {
 		const res = await this.client.insert({
 			table: 'events',
-			values: [event], // TODO: Batch these for better performance
+			values: [event],
 			format: 'JSONEachRow',
 		})
 		if (!res.executed) {
