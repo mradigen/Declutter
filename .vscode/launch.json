@@ -1,0 +1,29 @@
+{
+	"version": "0.2.0",
+	"configurations": [
+		{
+			"name": "Launch Analytics API",
+			"request": "launch",
+			"runtimeArgs": ["run", "dev:Analytics"],
+			"runtimeExecutable": "pnpm",
+			"skipFiles": ["<node_internals>/**"],
+			"type": "node"
+		},
+		{
+			"name": "Launch Consumer",
+			"request": "launch",
+			"runtimeArgs": ["run", "dev:consumer"],
+			"runtimeExecutable": "pnpm",
+			"skipFiles": ["<node_internals>/**"],
+			"type": "node"
+		},
+		{
+			"name": "Launch Producer",
+			"request": "launch",
+			"runtimeArgs": ["run", "dev:producer"],
+			"runtimeExecutable": "pnpm",
+			"skipFiles": ["<node_internals>/**"],
+			"type": "node"
+		}
+	]
+}
