@@ -43,7 +43,10 @@ try {
 		bloomFilterErrorRate: config.bloom.errorRate,
 	})
 	await cache.init()
+	let t = performance.now()
 	await cache.cacheSiteIDs()
+	t = performance.now() - t
+	console.log(`Cache initialized in ${(t / 1000).toFixed(2)} s with site IDs`)
 	console.log('Cache initialized with site IDs')
 } catch (error) {
 	console.error('Failed to initialize Queue or Cache:', error)
@@ -117,7 +120,7 @@ app.post(
 		propagation.inject(context.active(), carrier)
 		span?.setAttribute('app.event_id', event.event_id)
 
-		producer.send({
+		await producer.send({
 			data: Buffer.from(JSON.stringify(validatedEvent)),
 			properties: carrier,
 			partitionKey: validatedEvent.site_id, // in case of sharding (which is bad), currently unused

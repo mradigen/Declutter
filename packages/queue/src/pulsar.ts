@@ -6,6 +6,7 @@ export class Pulsar {
 	constructor(url: string) {
 		this.client = new PulsarClient.Client({
 			serviceUrl: url,
+			listenerName: 'external', // This tells the client to reconnect using only the external localhost address, not the internal docker dns address "broker"
 		})
 	}
 

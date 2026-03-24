@@ -52,7 +52,6 @@ export class Postgres implements IUsersDB {
 		}
 	}
 
-	// XXX: maybe rename this to somewthing better later, as it returns the site if user owns it, not just a boolean
 	async getSiteIfOwnedByUser(
 		user: User,
 		site_id: string
