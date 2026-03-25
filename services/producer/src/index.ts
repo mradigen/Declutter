@@ -1,41 +1,24 @@
 import config from '@declutter/lib/config'
-import { initTracing } from '@declutter/tracing'
-if (config.trace.enable) {
-	initTracing('events-producer')
-}
-// const tracer = trace.getTracer('events-producer')
-
-import type { Producer } from 'pulsar-client'
-
-import { EventSchema, type Event } from '@declutter/lib/schema'
 import { Pulsar } from '@declutter/queue'
+import { initTracing } from '@declutter/tracing'
 import { serve } from '@hono/node-server'
-import { httpInstrumentationMiddleware } from '@hono/otel'
-import { context, propagation, SpanStatusCode, trace } from '@opentelemetry/api'
-import { Hono } from 'hono'
-import { validator } from 'hono/validator'
 
 import { Valkey } from './cache.js'
+import { ProducerService } from './producer.service.js'
+import { createRouter } from './router.js'
 
-const app = new Hono()
+if (config.trace.enable) initTracing('events-producer')
 
-app.get('/', (c) => {
-	return c.text('Events Receiver is running!')
-})
-
-// Initialize Pulsar
-let client = new Pulsar(config.queue.url).getClient()
-let producer: Producer
-let cache: Valkey
-try {
+async function bootstrap() {
+	// Queue
+	const client = new Pulsar(config.queue.url)
 	console.log('Connecting to Pulsar...')
-	producer = await client.createProducer({
-		topic: config.queue.topics.eventAdded,
-	})
+	const producer = await client.createProducer(config.queue.topics.eventAdded)
 	console.log('Pulsar Producer initialized')
 
+	// Cache
 	console.log('Initializing cache...')
-	cache = new Valkey({
+	const cache = new Valkey({
 		host: config.cache.host,
 		port: config.cache.port,
 		key: config.cache.keys.siteIDs,
@@ -47,91 +30,29 @@ try {
 	await cache.cacheSiteIDs()
 	t = performance.now() - t
 	console.log(`Cache initialized in ${(t / 1000).toFixed(2)} s with site IDs`)
-	console.log('Cache initialized with site IDs')
-} catch (error) {
-	console.error('Failed to initialize Queue or Cache:', error)
-	process.exit(1)
+
+	const service = new ProducerService(cache, producer)
+	console.log('Producer service initialized')
+
+	const app = createRouter(service)
+	const server = serve(
+		{
+			fetch: app.fetch,
+			port: config.producer.listenPort,
+		},
+		(info) => {
+			console.log(`Producer ready on http://localhost:${info.port}`)
+		}
+	)
+
+	process.on('SIGTERM', async () => {
+		console.log('Received SIGTERM, shutting down')
+		server.close()
+		await producer.close()
+		await client.close()
+		cache.close()
+		process.exit(0)
+	})
 }
 
-app.use(
-	httpInstrumentationMiddleware({
-		serviceName: 'events-producer',
-		serviceVersion: '1.0.0',
-		captureRequestHeaders: ['user-agent', 'service-name'],
-	})
-)
-
-app.post(
-	'/event',
-	validator('json', (value) => value),
-	async (c) => {
-		const span = trace.getActiveSpan()
-		const event: Event = c.req.valid('json') as Event
-
-		span?.addEvent('Checking in bloom filter')
-		const siteIDExists = cache.checkSiteID(event.site_id)
-
-		if (!siteIDExists) {
-			span?.setStatus({
-				code: SpanStatusCode.ERROR,
-				message: 'Invalid site_id',
-			})
-			if (config.mode === 'development') {
-				c.status(400)
-				return c.text('Invalid site_id: ' + event.site_id)
-			}
-
-			c.status(202) // sends 202 to prevent leaking information about valid siteIDs
-			return c.text('Event produced')
-		}
-
-		event.event_id = crypto.randomUUID()
-		event.timestamp = Date.now()
-
-		let validatedEvent: Event
-		try {
-			validatedEvent = await EventSchema.parseAsync(event)
-		} catch (error) {
-			span?.setStatus({
-				code: SpanStatusCode.ERROR,
-				message: 'Invalid event data',
-			})
-			c.status(400)
-			return c.text('Invalid event data: ' + error)
-		}
-
-		const carrier = {}
-		propagation.inject(context.active(), carrier)
-		span?.setAttribute('app.event_id', event.event_id)
-
-		await producer.send({
-			data: Buffer.from(JSON.stringify(validatedEvent)),
-			properties: carrier,
-			partitionKey: validatedEvent.site_id, // in case of sharding (which is bad), currently unused
-		})
-
-		console.log('Event sent to queue', event.event_id)
-
-		c.status(202)
-		return c.text('Event produced')
-	}
-)
-
-const server = serve(
-	{
-		fetch: app.fetch,
-		port: config.producer.listenPort,
-	},
-	(info) => {
-		console.log(`Producer ready on http://localhost:${info.port}`)
-	}
-)
-
-process.on('SIGTERM', async () => {
-	server.close()
-	await producer.close()
-	await client.close()
-	process.exit(0)
-})
-
-console.log('asd')
+bootstrap()

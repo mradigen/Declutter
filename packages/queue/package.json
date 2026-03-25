@@ -3,7 +3,8 @@
 	"version": "1.0.0",
 	"type": "module",
 	"exports": {
-		".": "./src/index.ts"
+		".": "./src/index.ts",
+		"./types": "./src/types.ts"
 	},
 	"dependencies": {
 		"pulsar-client": "^1.16.0"

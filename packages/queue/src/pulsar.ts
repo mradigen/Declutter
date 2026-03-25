@@ -1,7 +1,9 @@
 import PulsarClient from 'pulsar-client'
 
-export class Pulsar {
-	client: PulsarClient.Client
+import type { IMessage, IProducer, IQueue } from './types.js'
+
+export class Pulsar implements IQueue {
+	private client: PulsarClient.Client
 
 	constructor(url: string) {
 		this.client = new PulsarClient.Client({
@@ -10,17 +12,50 @@ export class Pulsar {
 		})
 	}
 
-	getClient(): PulsarClient.Client {
-		if (!this.client) {
-			throw Error('Pulsar client not initialized')
-		}
+	async subscribe(
+		topic: string,
+		subscriptionName: string,
+		onMessage: (
+			message: IMessage,
+			acknowledge: () => void,
+			negativeAcknowledge: () => void
+		) => Promise<void>
+	): Promise<void> {
+		await this.client.subscribe({
+			topic: topic,
+			subscription: subscriptionName,
+			subscriptionType: 'Shared',
+			listener: async (message, consumer) => {
+				const ack = () => consumer.acknowledge(message)
+				const nack = () => consumer.negativeAcknowledge(message)
 
-		return this.client
+				await onMessage(message, ack, nack)
+			},
+		})
 	}
 
-	async closeClient(): Promise<void> {
-		if (this.client) {
-			await this.client.close()
+	async createProducer(topic: string): Promise<IProducer> {
+		const producer = await this.client.createProducer({ topic: topic })
+
+		return {
+			send: async (options: {
+				data: Buffer
+				properties?: Record<string, string>
+				partitionKey?: string
+			}) => {
+				await producer.send({
+					data: options.data,
+					properties: options.properties,
+					partitionKey: options.partitionKey,
+				})
+			},
+			close: async () => {
+				await producer.close()
+			},
 		}
+	}
+
+	async close(): Promise<void> {
+		await this.client.close()
 	}
 }
