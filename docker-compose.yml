@@ -169,6 +169,7 @@ services:
 
     consumer:
         profiles: [dev]
+        image: declutter/consumer:latest
         build:
             context: .
             dockerfile: services/consumer/Dockerfile.dev
@@ -202,6 +203,7 @@ services:
 
     producer:
         profiles: [dev]
+        image: declutter/producer:latest
         build:
             context: .
             dockerfile: services/producer/Dockerfile.dev
@@ -235,6 +237,7 @@ services:
 
     api:
         profiles: [dev]
+        image: declutter/api:latest
         build:
             context: .
             dockerfile: services/api/Dockerfile.dev
