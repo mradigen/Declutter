@@ -110,12 +110,14 @@ app.post(
 			partitionKey: validatedEvent.site_id, // in case of sharding (which is bad), currently unused
 		})
 
+		console.log('Event sent to queue', event.event_id)
+
 		c.status(202)
 		return c.text('Event produced')
 	}
 )
 
-serve(
+const server = serve(
 	{
 		fetch: app.fetch,
 		port: config.producer.listenPort,
@@ -124,3 +126,12 @@ serve(
 		console.log(`Producer ready on http://localhost:${info.port}`)
 	}
 )
+
+process.on('SIGTERM', async () => {
+	server.close()
+	await producer.close()
+	await client.close()
+	process.exit(0)
+})
+
+console.log('asd')

@@ -134,3 +134,10 @@ console.log(
 	'Pulsar Consumer initialized with subscription name:',
 	subscriptionName
 )
+
+process.on('SIGTERM', async () => {
+	await client.close()
+	process.exit(0)
+})
+
+// console.log('test')
