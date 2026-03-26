@@ -1,11 +1,11 @@
 import config from '@declutter/lib/config'
 import { Pulsar } from '@declutter/queue'
 import { initTracing } from '@declutter/tracing'
-import { serve } from '@hono/node-server'
 
 import { Valkey } from './cache.js'
 import { ProducerService } from './producer.service.js'
-import { createRouter } from './router.js'
+import { Router } from './router.js'
+// import { createRouter } from './router.js'
 
 if (config.trace.enable) initTracing('events-producer')
 
@@ -34,20 +34,15 @@ async function bootstrap() {
 	const service = new ProducerService(cache, producer)
 	console.log('Producer service initialized')
 
-	const app = createRouter(service)
-	const server = serve(
-		{
-			fetch: app.fetch,
-			port: config.producer.listenPort,
-		},
-		(info) => {
-			console.log(`Producer ready on http://localhost:${info.port}`)
-		}
-	)
+	const router = new Router(service, {
+		exposeInvalidSite: config.mode === 'development',
+	})
+	console.log('Router initialized')
+	router.start(config.producer.listenPort)
 
 	process.on('SIGTERM', async () => {
 		console.log('Received SIGTERM, shutting down')
-		server.close()
+		router.close()
 		await producer.close()
 		await client.close()
 		cache.close()
