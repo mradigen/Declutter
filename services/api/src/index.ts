@@ -42,10 +42,8 @@ async function bootstrap() {
 	const auth = new Auth(users_db)
 
 	const client = new Pulsar(config.queue.url)
-	const sitePublisherProducer = await client.createProducer(
-		config.queue.topics.siteAdded
-	)
-	const sitePublisher = new SitePublisher(sitePublisherProducer)
+	const producer = await client.createProducer(config.queue.topics.siteAdded)
+	const sitePublisher = new SitePublisher(producer)
 	console.log('Queue initialized successfully')
 
 	const apiService = new ApiService(
@@ -64,7 +62,8 @@ async function bootstrap() {
 		apiService.close()
 		users_db.close()
 		events_db.close()
-		await sitePublisherProducer.close()
+		await producer.close()
+		await client.close()
 		process.exit(0)
 	})
 }

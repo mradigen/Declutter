@@ -26,10 +26,16 @@ export class Clickhouse implements IEventsDB {
 			query: `
 				SELECT toStartOfInterval(timestamp, INTERVAL ${interval}) AS time, COUNT(*) as count
 				FROM events
-				WHERE site_id='${site.site_id}' AND timestamp >= toDateTime(${startTime}) AND timestamp <= toDateTime(${endTime})
-				GROUP BY time
-				ORDER BY time
+				WHERE site_id = {siteId:String} 
+				AND timestamp >= toDateTime({start:UInt64}) 
+				AND timestamp <= toDateTime({end:UInt64})
+				GROUP BY time ORDER BY time
 			`,
+			query_params: {
+				siteId: site.site_id,
+				start: startTime,
+				end: endTime,
+			},
 			format: 'JSONEachRow',
 		})
 
@@ -41,11 +47,18 @@ export class Clickhouse implements IEventsDB {
 
 		const res = await this.client.query({
 			query: `
-				SELECT user_agent, COUNT(*) as count
+				SELECT user_agent, COUNT(*) AS count
 				FROM events
-				WHERE site_id='${site.site_id}' AND timestamp >= toDateTime(${startTime}) AND timestamp <= toDateTime(${endTime})
+				WHERE site_id = {siteId:String}
+					AND timestamp >= toDateTime({startTime:UInt32})
+					AND timestamp <= toDateTime({endTime:UInt32})
 				GROUP BY user_agent
 			`,
+			query_params: {
+				siteId: site.site_id,
+				startTime,
+				endTime,
+			},
 			format: 'JSONEachRow',
 		})
 
@@ -57,11 +70,18 @@ export class Clickhouse implements IEventsDB {
 
 		const res = await this.client.query({
 			query: `
-				SELECT location, COUNT(*) as count
+				SELECT location, COUNT(*) AS count
 				FROM events
-				WHERE site_id='${site.site_id}' AND timestamp >= toDateTime(${startTime}) AND timestamp <= toDateTime(${endTime})
+				WHERE site_id = {siteId:String}
+					AND timestamp >= toDateTime({startTime:UInt32})
+					AND timestamp <= toDateTime({endTime:UInt32})
 				GROUP BY location
 			`,
+			query_params: {
+				siteId: site.site_id,
+				startTime,
+				endTime,
+			},
 			format: 'JSONEachRow',
 		})
 
@@ -73,11 +93,18 @@ export class Clickhouse implements IEventsDB {
 
 		const res = await this.client.query({
 			query: `
-				SELECT referrer, COUNT(*) as count
+				SELECT referrer, COUNT(*) AS count
 				FROM events
-				WHERE site_id='${site.site_id}' AND timestamp >= toDateTime(${startTime}) AND timestamp <= toDateTime(${endTime})
+				WHERE site_id = {siteId:String}
+					AND timestamp >= toDateTime({startTime:UInt32})
+					AND timestamp <= toDateTime({endTime:UInt32})
 				GROUP BY referrer
 			`,
+			query_params: {
+				siteId: site.site_id,
+				startTime,
+				endTime,
+			},
 			format: 'JSONEachRow',
 		})
 
@@ -89,12 +116,19 @@ export class Clickhouse implements IEventsDB {
 
 		const res = await this.client.query({
 			query: `
-				SELECT page, COUNT(*) as count
+				SELECT page, COUNT(*) AS count
 				FROM events
-				WHERE site_id='${site.site_id}' AND timestamp >= toDateTime(${startTime}) AND timestamp <= toDateTime(${endTime})
+				WHERE site_id = {siteId:String}
+					AND timestamp >= toDateTime({startTime:UInt32})
+					AND timestamp <= toDateTime({endTime:UInt32})
 				GROUP BY page
 				ORDER BY count DESC
 			`,
+			query_params: {
+				siteId: site.site_id,
+				startTime,
+				endTime,
+			},
 			format: 'JSONEachRow',
 		})
 

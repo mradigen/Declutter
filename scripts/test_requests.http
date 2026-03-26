@@ -66,19 +66,31 @@ Authorization: {{login.response.headers.authorization}}
 ###
 
 # @name eventsByHour
-GET {{baseUrl}}/sites/bbbbbbbb-bbbb-4bbb-bbbb-bbbbbbbbbbbb/events?startTime=1690000000&endTime=1799999999&interval=1%20hour
+GET {{baseUrl}}/sites/bbbbbbbb-bbbb-4bbb-bbbb-bbbbbbbbbbbb/events?startTime=1690000000&endTime=1799999999&interval=1%20HOUR
 Authorization: {{login.response.headers.authorization}}
 
 ###
 
 # @name eventsByMinute
-GET {{baseUrl}}/sites/bbbbbbbb-bbbb-4bbb-bbbb-bbbbbbbbbbbb/events?startTime=1690000000&endTime=1799999999&interval=1%20minute
+GET {{baseUrl}}/sites/bbbbbbbb-bbbb-4bbb-bbbb-bbbbbbbbbbbb/events?startTime=1690000000&endTime=1799999999&interval=1%20MINUTE
 Authorization: {{login.response.headers.authorization}}
 
 ###
 
 # @name eventsBySecond
-GET {{baseUrl}}/sites/bbbbbbbb-bbbb-4bbb-bbbb-bbbbbbbbbbbb/events?startTime=1690000000&endTime=1799999999&interval=1%20second
+GET {{baseUrl}}/sites/bbbbbbbb-bbbb-4bbb-bbbb-bbbbbbbbbbbb/events?startTime=1690000000&endTime=1799999999&interval=1%20SECOND
+Authorization: {{login.response.headers.authorization}}
+
+###
+
+# @name eventsByDay
+GET {{baseUrl}}/sites/bbbbbbbb-bbbb-4bbb-bbbb-bbbbbbbbbbbb/events?startTime=1690000000&endTime=1799999999&interval=1%20DAY
+Authorization: {{login.response.headers.authorization}}
+
+###
+
+# @name eventsByWeek
+GET {{baseUrl}}/sites/bbbbbbbb-bbbb-4bbb-bbbb-bbbbbbbbbbbb/events?startTime=1690000000&endTime=1799999999&interval=1%20WEEK
 Authorization: {{login.response.headers.authorization}}
 
 ###

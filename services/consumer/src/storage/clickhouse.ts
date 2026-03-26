@@ -39,7 +39,10 @@ export class Clickhouse implements IStorage {
 
 	async get(eventId: string): Promise<any> {
 		const res = await this.client.query({
-			query: `SELECT * FROM events WHERE event_id='${eventId}'`,
+			query: `SELECT * FROM events WHERE event_id={siteId:String}`,
+			query_params: {
+				siteId: eventId,
+			},
 			format: 'JSONEachRow',
 		})
 		const data = await res.json()
