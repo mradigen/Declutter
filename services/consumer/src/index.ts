@@ -5,7 +5,7 @@ import { initTracing } from '@declutter/tracing'
 import type { IStorage } from './storage/IStorage.js'
 
 import { Valkey } from './cache.js'
-import { EventConsumer } from './consumer.service.js'
+import { Consumer } from './consumer.js'
 import { Clickhouse } from './storage/clickhouse.js'
 
 if (config.trace.enable) initTracing('events-consumer')
@@ -42,7 +42,7 @@ async function bootstrap() {
 	const queue = new Pulsar(config.queue.url)
 
 	// Start service
-	const service = new EventConsumer(db, cache, queue)
+	const service = new Consumer(db, cache, queue)
 
 	let subscriptionName = config.queue.topics.eventAdded
 	await service.start(subscriptionName, 'eventsConsumer')

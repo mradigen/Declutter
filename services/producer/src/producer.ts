@@ -10,7 +10,7 @@ export type EventResult =
 	| { status: 'invalid_site' }
 	| { status: 'invalid_data'; error: Error }
 
-export class ProducerService {
+export class Producer {
 	constructor(
 		private cache: Valkey,
 		private producer: IProducer

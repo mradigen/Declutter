@@ -5,7 +5,7 @@ import { httpInstrumentationMiddleware } from '@hono/otel'
 import { Hono } from 'hono'
 import { validator } from 'hono/validator'
 
-import type { EventResult, ProducerService } from './producer.service.js'
+import type { EventResult, Producer } from './producer.js'
 
 type RouterOptions = {
 	exposeInvalidSite: boolean
@@ -16,7 +16,7 @@ export class Router {
 	private server: ReturnType<typeof serve> | undefined
 
 	constructor(
-		private service: ProducerService,
+		private service: Producer,
 		private options: RouterOptions
 	) {
 		this.app = new Hono()

@@ -3,10 +3,10 @@ import type { IMessage, IQueue } from '@declutter/queue/types'
 import { EventSchema, type Event } from '@declutter/lib/schema'
 import { withSpan } from '@declutter/tracing'
 import {
-	propagation,
 	context,
-	trace,
+	propagation,
 	SpanStatusCode,
+	trace,
 	type Span,
 } from '@opentelemetry/api'
 import sjson from 'secure-json-parse'
@@ -17,7 +17,7 @@ import { Valkey } from './cache.js'
 
 const tracer = trace.getTracer('events-consumer')
 
-export class EventConsumer {
+export class Consumer {
 	constructor(
 		private db: IStorage,
 		private cache: Valkey,

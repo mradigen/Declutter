@@ -3,9 +3,8 @@ import { Pulsar } from '@declutter/queue'
 import { initTracing } from '@declutter/tracing'
 
 import { Valkey } from './cache.js'
-import { ProducerService } from './producer.service.js'
+import { Producer } from './producer.js'
 import { Router } from './router.js'
-// import { createRouter } from './router.js'
 
 if (config.trace.enable) initTracing('events-producer')
 
@@ -31,7 +30,7 @@ async function bootstrap() {
 	t = performance.now() - t
 	console.log(`Cache initialized in ${(t / 1000).toFixed(2)} s with site IDs`)
 
-	const service = new ProducerService(cache, producer)
+	const service = new Producer(cache, producer)
 	console.log('Producer service initialized')
 
 	const router = new Router(service, {
