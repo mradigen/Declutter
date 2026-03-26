@@ -49,13 +49,16 @@ export class ProducerService {
 		propagation.inject(context.active(), carrier)
 		span?.setAttribute('app.event_id', event.event_id)
 
+		span?.addEvent('Sending event to queue', {
+			'app.event_id': event.event_id,
+		})
+
+		// TODO: consider adding retry logic here in case of transient failures, but be careful to avoid duplicates in case of retries. Pulsar's deduplication feature could help with this if enabled on the topic.
 		await this.producer.send({
 			data: Buffer.from(JSON.stringify(validatedEvent)),
 			properties: carrier,
 			partitionKey: validatedEvent.site_id, // in case of sharding (which is bad), currently unused
 		})
-
-		console.log('Event sent to queue', event.event_id)
 
 		return { status: 'success' }
 	}

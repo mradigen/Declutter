@@ -35,7 +35,10 @@ export class Pulsar implements IQueue {
 	}
 
 	async createProducer(topic: string): Promise<IProducer> {
-		const producer = await this.client.createProducer({ topic: topic })
+		const producer = await this.client.createProducer({
+			topic: topic,
+			// batchingEnabled: false, // Disable batching for lower latency, but higher overhead. Can be enabled for higher throughput if latency is not a concern.
+		})
 
 		return {
 			send: async (options: {
