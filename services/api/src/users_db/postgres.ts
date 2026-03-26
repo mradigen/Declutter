@@ -37,7 +37,7 @@ export class Postgres implements IUsersDB {
 			'INSERT INTO users (email, password_hash) VALUES ($1, $2)',
 			[email, password_hash]
 		)
-		if (res.rowCount === 1) {
+		if (res.rowCount !== 1) {
 			throw new Error(`Add User failed: (${email})`)
 		}
 	}
