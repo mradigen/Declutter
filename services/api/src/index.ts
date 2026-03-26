@@ -1,22 +1,16 @@
-import { initTracing } from '@declutter/tracing'
-if (config.trace.enable) {
-	initTracing('analytics-api')
-}
-
 import type { DBConfig } from '@declutter/lib/config'
 
 import config from '@declutter/lib/config'
-import { serve } from '@hono/node-server'
-import { httpInstrumentationMiddleware } from '@hono/otel'
-import { trace } from '@opentelemetry/api'
-import { Hono } from 'hono'
+import { Pulsar } from '@declutter/queue'
+import { initTracing } from '@declutter/tracing'
 
-import { Auth } from './auth/index.js'
-import { Clickhouse } from './events_db/clickhouse.js'
-import { Pulsar } from './queue/pulsar.js'
-import { authRouter } from './routes/auth.js'
-import { siteRouter } from './routes/sites.js'
-import { Postgres } from './users_db/postgres.js'
+import { ApiService } from './api.service.js'
+import { Auth } from './auth.js'
+import { Clickhouse } from './events-db/clickhouse.js'
+import { SitePublisher } from './site-publisher.js'
+import { Postgres } from './users-db/postgres.js'
+
+if (config.trace.enable) initTracing('analytics-api')
 
 ///////////////
 // FACTORIES //
@@ -35,51 +29,44 @@ function createEventsDB(config: DBConfig) {
 	throw new Error(`Unsupported database type: ${config.type}`)
 }
 
-////////////////
-// SINGLETONS //
-////////////////
-export const users_db = createUsersDB(config.users_db)
-export const events_db = createEventsDB(config.events_db)
-export const auth = new Auth(users_db)
-export const queue = new Pulsar({
-	url: config.queue.url,
-	topic: config.queue.topics.siteAdded,
-})
-try {
-	console.log('Connecting to queue...')
-	await queue.init()
-} catch (error) {
-	throw new Error('Failed to initialize queue: ' + error)
-}
-console.log('Queue initialized successfully')
-export const tracer = trace.getTracer('analytics-api')
+///////////////
+// BOOTSTRAP //
+///////////////
+async function bootstrap() {
+	const users_db = createUsersDB(config.users_db)
+	console.log('Users DB initialized successfully')
 
-////////////
-// ROUTER //
-////////////
-const app = new Hono()
+	const events_db = createEventsDB(config.events_db)
+	console.log('Events DB initialized successfully')
 
-app.use(
-	httpInstrumentationMiddleware({
-		serviceName: 'analytics-api',
-		serviceVersion: '1.0.0',
-		captureRequestHeaders: ['user-agent', 'service-name'],
+	const auth = new Auth(users_db)
+
+	const client = new Pulsar(config.queue.url)
+	const sitePublisherProducer = await client.createProducer(
+		config.queue.topics.siteAdded
+	)
+	const sitePublisher = new SitePublisher(sitePublisherProducer)
+	console.log('Queue initialized successfully')
+
+	const apiService = new ApiService(
+		users_db,
+		events_db,
+		auth,
+		sitePublisher,
+		{
+			jwtSecret: config.api.jwtSecret,
+		}
+	)
+	apiService.start()
+
+	process.on('SIGTERM', async () => {
+		console.log('Received SIGTERM. Shutting down')
+		apiService.close()
+		users_db.close()
+		events_db.close()
+		await sitePublisherProducer.close()
+		process.exit(0)
 	})
-)
+}
 
-app.get('/', (c) => {
-	return c.text('Analytics API is running!')
-})
-
-app.route('/auth', authRouter)
-app.route('/sites', siteRouter)
-
-serve(
-	{
-		fetch: app.fetch,
-		port: 5000,
-	},
-	(info) => {
-		console.log(`analyticsAPI is running on http://localhost:${info.port}`)
-	}
-)
+bootstrap()

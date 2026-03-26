@@ -2,42 +2,46 @@ import config from '@declutter/lib/config'
 import { Hono } from 'hono'
 import { sign } from 'hono/jwt'
 
-import { auth } from '../index.js'
+import type { Auth } from '../auth.js'
 
-export const authRouter = new Hono()
+export function createAuthRouter(auth: Auth) {
+	const authRouter = new Hono()
 
-authRouter.post('/login', async (c) => {
-	const { email, password } = await c.req.json()
+	authRouter.post('/login', async (c) => {
+		const { email, password } = await c.req.json()
 
-	const user = await auth.login(email, password)
+		const user = await auth.login(email, password)
 
-	if (!user) {
-		return c.json({ success: false }, 401)
-	}
+		if (!user) {
+			return c.json({ success: false }, 401)
+		}
 
-	const token = await sign(
-		{
-			email: user.email,
-			user_id: user.user_id,
-			exp: Math.floor(Date.now() / 1000) + 60 * 5,
-		},
-		config.api.jwtSecret
-	)
+		const token = await sign(
+			{
+				email: user.email,
+				user_id: user.user_id,
+				exp: Math.floor(Date.now() / 1000) + 60 * 5,
+			},
+			config.api.jwtSecret
+		)
 
-	c.header('Authorization', `Bearer ${token}`)
+		c.header('Authorization', `Bearer ${token}`)
 
-	return c.json({ success: true })
-})
+		return c.json({ success: true })
+	})
 
-authRouter.post('/signup', async (c) => {
-	const { email, password } = await c.req.json()
+	authRouter.post('/signup', async (c) => {
+		const { email, password } = await c.req.json()
 
-	try {
-		await auth.signup(email, password)
-	} catch (e) {
-		console.log(e)
-		return c.json({ success: false }, 400)
-	}
+		try {
+			await auth.signup(email, password)
+		} catch (e) {
+			console.log(e)
+			return c.json({ success: false }, 400)
+		}
 
-	return c.json({ success: true })
-})
+		return c.json({ success: true })
+	})
+
+	return authRouter
+}
